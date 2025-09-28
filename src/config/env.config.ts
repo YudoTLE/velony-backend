@@ -35,4 +35,11 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1000)
   DB_CONNECTION_TIMEOUT?: number = 2000;
+
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  PORT?: number = 5000;
 }
