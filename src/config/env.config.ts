@@ -42,4 +42,31 @@ export class EnvironmentVariables {
   @Min(1)
   @Max(65535)
   PORT?: number = 5000;
+
+  @IsOptional()
+  @IsString()
+  REDIS_HOST?: string = 'localhost';
+
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  REDIS_PORT?: number = 6379;
+
+  @IsOptional()
+  @IsString()
+  REDIS_PASSWORD?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  JWT_SECRET: string;
+
+  @IsOptional()
+  @IsString()
+  JWT_ACCESS_EXPIRATION?: string = '15m';
+
+  @IsOptional()
+  @IsString()
+  JWT_REFRESH_EXPIRATION?: string = '7d';
 }

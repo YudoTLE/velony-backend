@@ -1,6 +1,6 @@
 import { IsString, IsStrongPassword, MinLength } from 'class-validator';
 
-export class CreateUserWithUsernameRequestDto {
+export class RegisterWithLocalStrategyRequestDto {
   @IsString()
   @MinLength(3)
   name: string;

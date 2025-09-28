@@ -1,17 +1,11 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
 import { QueryResult } from 'pg';
 
-import { CreateUserWithUsernameRequestDto } from './dto/create-user-with-username-request.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
 import { UsersService } from './users.service';
 import { DatabaseService } from '../database/database.service';
-
-// Mock bcrypt
-jest.mock('bcrypt');
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -63,60 +57,6 @@ describe('UsersService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('createUserWithUsername', () => {
-    const createUserDto: CreateUserWithUsernameRequestDto = {
-      name: 'John Doe',
-      username: 'johndoe',
-      password: 'StrongPassword123!',
-    };
-
-    beforeEach(() => {
-      mockedBcrypt.hash.mockResolvedValue('hashedPassword' as never);
-    });
-
-    it('should create a user successfully', async () => {
-      mockDatabaseService.query.mockResolvedValue(mockQueryResult);
-
-      const result = await service.createUserWithUsername(createUserDto);
-
-      expect(mockedBcrypt.hash).toHaveBeenCalledWith(
-        createUserDto.password,
-        12,
-      );
-      expect(mockDatabaseService.query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO users'),
-        [createUserDto.name, createUserDto.username, 'hashedPassword'],
-      );
-      expect(result).toBeInstanceOf(UserDetailResponseDto);
-      expect(result.uuid).toBe(mockUserRow.uuid);
-      expect(result.name).toBe(mockUserRow.name);
-      expect(result.username).toBe(mockUserRow.username);
-    });
-
-    it('should throw ConflictException when username already exists', async () => {
-      const dbError = {
-        code: '23505',
-        constraint: 'users_username_unique',
-      };
-      mockDatabaseService.query.mockRejectedValue(dbError);
-
-      await expect(
-        service.createUserWithUsername(createUserDto),
-      ).rejects.toThrow(ConflictException);
-
-      expect(mockDatabaseService.query).toHaveBeenCalledTimes(1);
-    });
-
-    it('should rethrow other database errors', async () => {
-      const dbError = new Error('Database connection failed');
-      mockDatabaseService.query.mockRejectedValue(dbError);
-
-      await expect(
-        service.createUserWithUsername(createUserDto),
-      ).rejects.toThrow('Database connection failed');
-    });
   });
 
   describe('findAll', () => {
@@ -311,38 +251,6 @@ describe('UsersService', () => {
       const result = await service.findByPhone(phoneNumber);
 
       expect(result).toBeNull();
-    });
-  });
-
-  describe('validatePassword', () => {
-    const password = 'testPassword';
-    const hashedPassword = 'hashedPassword';
-
-    it('should return true for valid password', async () => {
-      mockedBcrypt.compare.mockResolvedValue(true as never);
-
-      const result = await service.validatePassword(hashedPassword, password);
-
-      expect(mockedBcrypt.compare).toHaveBeenCalledWith(
-        password,
-        hashedPassword,
-      );
-      expect(result).toBe(true);
-    });
-
-    it('should return false for invalid password', async () => {
-      mockedBcrypt.compare.mockResolvedValue(false as never);
-
-      const result = await service.validatePassword(hashedPassword, password);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false when passwordHash is null', async () => {
-      const result = await service.validatePassword(null, password);
-
-      expect(result).toBe(false);
-      expect(mockedBcrypt.compare).not.toHaveBeenCalled();
     });
   });
 });

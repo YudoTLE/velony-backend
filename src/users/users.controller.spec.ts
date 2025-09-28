@@ -1,7 +1,6 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { CreateUserWithUsernameRequestDto } from './dto/create-user-with-username-request.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
 import { UsersController } from './users.controller';
@@ -10,7 +9,6 @@ import { UsersService } from './users.service';
 describe('UsersController', () => {
   let controller: UsersController;
   let mockUsersService: {
-    createUserWithUsername: jest.Mock;
     findAll: jest.Mock;
     findByUuid: jest.Mock;
   };
@@ -35,7 +33,6 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     mockUsersService = {
-      createUserWithUsername: jest.fn(),
       findAll: jest.fn(),
       findByUuid: jest.fn(),
     };
@@ -59,47 +56,6 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-  });
-
-  describe('createUserWithUsername', () => {
-    it('should create a user successfully', async () => {
-      const createUserDto: CreateUserWithUsernameRequestDto = {
-        name: 'John Doe',
-        username: 'johndoe',
-        password: 'StrongPassword123!',
-      };
-
-      mockUsersService.createUserWithUsername.mockResolvedValue(
-        mockUserDetailResponse,
-      );
-
-      const result = await controller.createUserWithUsername(createUserDto);
-
-      expect(mockUsersService.createUserWithUsername).toHaveBeenCalledWith(
-        createUserDto,
-      );
-      expect(mockUsersService.createUserWithUsername).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockUserDetailResponse);
-    });
-
-    it('should throw ConflictException when username already exists', async () => {
-      const createUserDto: CreateUserWithUsernameRequestDto = {
-        name: 'John Doe',
-        username: 'existinguser',
-        password: 'StrongPassword123!',
-      };
-
-      mockUsersService.createUserWithUsername.mockRejectedValue(
-        new ConflictException('Username already exists'),
-      );
-
-      await expect(
-        controller.createUserWithUsername(createUserDto),
-      ).rejects.toThrow(ConflictException);
-      expect(mockUsersService.createUserWithUsername).toHaveBeenCalledWith(
-        createUserDto,
-      );
-    });
   });
 
   describe('findAll', () => {
