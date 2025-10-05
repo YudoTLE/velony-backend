@@ -6,7 +6,23 @@ import {
   IsInt,
   Min,
   Max,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  Validate,
 } from 'class-validator';
+
+import { isValidJwtExpiration } from '../auth/utils/jwt-expiration.util';
+
+@ValidatorConstraint({ name: 'isJwtExpiration', async: false })
+export class IsJwtExpirationConstraint implements ValidatorConstraintInterface {
+  validate(value: string): boolean {
+    return isValidJwtExpiration(value);
+  }
+
+  defaultMessage(): string {
+    return 'JWT expiration must be in format like "15m", "7d", "2h", "30s", or "1y"';
+  }
+}
 
 export class EnvironmentVariables {
   @IsString()
@@ -60,13 +76,19 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  JWT_SECRET: string;
+  JWT_ACCESS_SECRET: string;
 
   @IsOptional()
   @IsString()
+  @Validate(IsJwtExpirationConstraint)
   JWT_ACCESS_EXPIRATION?: string = '15m';
 
+  @IsString()
+  @IsNotEmpty()
+  JWT_REFRESH_SECRET: string;
+
   @IsOptional()
   @IsString()
+  @Validate(IsJwtExpirationConstraint)
   JWT_REFRESH_EXPIRATION?: string = '7d';
 }

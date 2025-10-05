@@ -8,16 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { EnvironmentVariables } from 'src/config/env.config';
 import { DatabaseService } from 'src/database/database.service';
-import { RedisService } from 'src/redis/redis.service';
 
-import { JwtResponseDto } from './dto/jwt-response-dto';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private databaseService: DatabaseService,
-    private redisService: RedisService,
     private configService: ConfigService<EnvironmentVariables>,
   ) {}
 
@@ -25,7 +23,7 @@ export class AuthService {
     name: string,
     username: string,
     password: string,
-  ): Promise<JwtResponseDto> {
+  ): Promise<JwtPayload> {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
@@ -53,7 +51,7 @@ export class AuthService {
   async signInWithLocalStrategy(
     username: string,
     password: string,
-  ): Promise<JwtResponseDto> {
+  ): Promise<JwtPayload> {
     const query = `
       SELECT uuid, password_hash 
       FROM users 
@@ -74,28 +72,16 @@ export class AuthService {
     return this.generateTokens(user.uuid);
   }
 
-  async refreshToken(refreshToken: string): Promise<JwtResponseDto> {
+  async refreshToken(refreshToken: string): Promise<JwtPayload> {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
-      const query = `
-        SELECT uuid 
-        FROM users 
-        WHERE uuid = $1
-      `;
+      const query = `SELECT uuid FROM users WHERE uuid = $1`;
       const result = await this.databaseService.query(query, [payload.sub]);
       const user = result.rows[0];
 
       if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const storedToken = await this.getStoredRefreshToken(
-        payload.sub,
-        refreshToken,
-      );
-      if (!storedToken) {
-        throw new UnauthorizedException('Refresh token not found');
+        throw new UnauthorizedException('User not found');
       }
 
       return this.generateTokens(user.uuid);
@@ -104,9 +90,8 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(userId: string): Promise<JwtResponseDto> {
+  private async generateTokens(userId: string): Promise<JwtPayload> {
     const payload = { sub: userId };
-    const now = Math.floor(Date.now() / 1000);
 
     const accessExpiration = this.configService.get('JWT_ACCESS_EXPIRATION');
     const refreshExpiration = this.configService.get('JWT_REFRESH_EXPIRATION');
@@ -118,81 +103,10 @@ export class AuthService {
       expiresIn: refreshExpiration,
     });
 
-    await this.storeRefreshToken(userId, refreshToken);
-
     return {
+      ...payload,
       accessToken,
       refreshToken,
-      tokenType: 'Bearer',
-      issuedAt: now,
-      expiresAt: now + this.getAccessTokenExpirationSeconds(),
     };
-  }
-
-  private async storeRefreshToken(
-    userId: string,
-    refreshToken: string,
-  ): Promise<void> {
-    const key = `refresh_token:${userId}`;
-    const expirationInSeconds = this.getRefreshTokenExpirationSeconds();
-
-    await this.redisService.setex(key, expirationInSeconds, refreshToken);
-  }
-
-  private getAccessTokenExpirationSeconds(): number {
-    const expiration = this.configService.get('JWT_ACCESS_EXPIRATION');
-    return this.parseExpirationToSeconds(expiration);
-  }
-
-  private getRefreshTokenExpirationSeconds(): number {
-    const expiration = this.configService.get('JWT_REFRESH_EXPIRATION');
-    return this.parseExpirationToSeconds(expiration);
-  }
-
-  private parseExpirationToSeconds(expiration: string): number {
-    const unit = expiration.slice(-1);
-    const value = parseInt(expiration.slice(0, -1));
-
-    switch (unit) {
-      case 's':
-        return value;
-      case 'm':
-        return value * 60;
-      case 'h':
-        return value * 60 * 60;
-      case 'd':
-        return value * 24 * 60 * 60;
-      default:
-        return 900; // 15 minutes default
-    }
-  }
-
-  private async getStoredRefreshToken(
-    userId: string,
-    token: string,
-  ): Promise<string | null> {
-    const key = `refresh_token:${userId}`;
-    const storedToken = await this.redisService.get(key);
-    return storedToken === token ? storedToken : null;
-  }
-
-  async revokeRefreshToken(userId: string): Promise<void> {
-    const key = `refresh_token:${userId}`;
-    await this.redisService.del(key);
-  }
-
-  // Convenience method to support sign-out by userId
-  async signOut(userId: string): Promise<void> {
-    return this.revokeRefreshToken(userId);
-  }
-
-  // Sign-out by providing the refresh token; verifies and revokes it
-  async signOutByRefreshToken(refreshToken: string): Promise<void> {
-    try {
-      const payload = this.jwtService.verify(refreshToken);
-      await this.revokeRefreshToken(payload.sub);
-    } catch (_err) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
   }
 }

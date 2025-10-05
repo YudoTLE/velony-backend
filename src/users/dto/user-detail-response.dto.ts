@@ -20,11 +20,9 @@ export class UserDetailResponseDto {
   @Expose({ name: 'profile_picture_url' })
   profilePictureUrl?: string;
 
-  @Expose()
   @Expose({ name: 'created_at' })
   createdAt: Date;
 
-  @Expose()
   @Expose({ name: 'updated_at' })
   updatedAt: Date;
 }

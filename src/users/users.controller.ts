@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
@@ -10,13 +17,16 @@ export class UsersController {
 
   @Get()
   async findAll(): Promise<UserSummaryResponseDto[]> {
-    return this.usersService.findAll();
+    const users = await this.usersService.findAll();
+    return plainToInstance(UserSummaryResponseDto, users);
   }
 
   @Get(':uuid')
   async findOne(
     @Param('uuid', ParseUUIDPipe) uuid: string,
   ): Promise<UserDetailResponseDto> {
-    return this.usersService.findByUuid(uuid);
+    const user = await this.usersService.findByUuid(uuid);
+    if (!user) throw new NotFoundException('User not found');
+    return plainToInstance(UserDetailResponseDto, user);
   }
 }
