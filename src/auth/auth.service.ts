@@ -21,7 +21,7 @@ export class AuthService {
     private configService: ConfigService<EnvironmentVariables>,
   ) {}
 
-  async registerUserWithLocalStrategy(
+  async signUpUserWithLocalStrategy(
     name: string,
     username: string,
     password: string,
@@ -50,7 +50,7 @@ export class AuthService {
     }
   }
 
-  async loginWithLocalStrategy(
+  async signInWithLocalStrategy(
     username: string,
     password: string,
   ): Promise<JwtResponseDto> {
@@ -179,5 +179,20 @@ export class AuthService {
   async revokeRefreshToken(userId: string): Promise<void> {
     const key = `refresh_token:${userId}`;
     await this.redisService.del(key);
+  }
+
+  // Convenience method to support sign-out by userId
+  async signOut(userId: string): Promise<void> {
+    return this.revokeRefreshToken(userId);
+  }
+
+  // Sign-out by providing the refresh token; verifies and revokes it
+  async signOutByRefreshToken(refreshToken: string): Promise<void> {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+      await this.revokeRefreshToken(payload.sub);
+    } catch (_err) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 }

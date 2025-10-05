@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class LoginWithLocalStrategyRequestDto {
+export class SignInWithLocalStrategyRequestDto {
   @IsString()
   username: string;
 

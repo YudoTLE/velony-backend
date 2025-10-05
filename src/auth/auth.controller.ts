@@ -2,37 +2,37 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { JwtResponseDto } from './dto/jwt-response-dto';
-import { LoginWithLocalStrategyRequestDto } from './dto/login-with-local-strategy-request.dto';
-import { RegisterWithLocalStrategyRequestDto } from './dto/register-with-local-strategy-request.dto';
+import { SignInWithLocalStrategyRequestDto } from './dto/sign-in-with-local-strategy-request.dto';
+import { SignUpWithLocalStrategyRequestDto } from './dto/sign-up-with-local-strategy-request.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('register')
+  @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
-  async registerWithLocalStrategy(
+  async signUpWithLocalStrategy(
     @Body()
-    registerDto: RegisterWithLocalStrategyRequestDto,
+    registerDto: SignUpWithLocalStrategyRequestDto,
   ): Promise<JwtResponseDto> {
     const { name, username, password } = registerDto;
 
-    return this.authService.registerUserWithLocalStrategy(
+    return this.authService.signUpUserWithLocalStrategy(
       name,
       username,
       password,
     );
   }
 
-  @Post('login')
+  @Post('sign-in')
   @HttpCode(HttpStatus.OK)
-  async loginWithLocalStrategy(
+  async signInWithLocalStrategy(
     @Body()
-    loginDto: LoginWithLocalStrategyRequestDto,
+    loginDto: SignInWithLocalStrategyRequestDto,
   ): Promise<JwtResponseDto> {
     const { username, password } = loginDto;
 
-    return this.authService.loginWithLocalStrategy(username, password);
+    return this.authService.signInWithLocalStrategy(username, password);
   }
 
   @Post('refresh')
@@ -41,5 +41,14 @@ export class AuthController {
     @Body('refreshToken') refreshToken: string,
   ): Promise<JwtResponseDto> {
     return this.authService.refreshToken(refreshToken);
+  }
+
+  @Post('sign-out')
+  @HttpCode(HttpStatus.OK)
+  async signOut(
+    @Body('refreshToken') refreshToken: string,
+  ): Promise<{ success: true }> {
+    await this.authService.signOutByRefreshToken(refreshToken);
+    return { success: true };
   }
 }

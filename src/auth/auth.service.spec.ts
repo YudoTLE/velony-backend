@@ -98,7 +98,7 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
-  describe('registerUserWithLocalStrategy', () => {
+  describe('signUpUserWithLocalStrategy', () => {
     const validRegistrationData = {
       name: 'John Doe',
       username: 'johndoe',
@@ -125,7 +125,7 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act
-      const result = await service.registerUserWithLocalStrategy(
+      const result = await service.signUpUserWithLocalStrategy(
         validRegistrationData.name,
         validRegistrationData.username,
         validRegistrationData.password,
@@ -175,7 +175,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.registerUserWithLocalStrategy(
+        service.signUpUserWithLocalStrategy(
           validRegistrationData.name,
           validRegistrationData.username,
           validRegistrationData.password,
@@ -198,7 +198,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.registerUserWithLocalStrategy(
+        service.signUpUserWithLocalStrategy(
           validRegistrationData.name,
           validRegistrationData.username,
           validRegistrationData.password,
@@ -213,7 +213,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.registerUserWithLocalStrategy(
+        service.signUpUserWithLocalStrategy(
           validRegistrationData.name,
           validRegistrationData.username,
           validRegistrationData.password,
@@ -243,7 +243,7 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act
-      const result = await service.registerUserWithLocalStrategy('', '', '');
+      const result = await service.signUpUserWithLocalStrategy('', '', '');
 
       // Assert
       expect(mockBcrypt.hash).toHaveBeenCalledWith('', 12);
@@ -276,7 +276,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.registerUserWithLocalStrategy(
+        service.signUpUserWithLocalStrategy(
           validRegistrationData.name,
           validRegistrationData.username,
           validRegistrationData.password,
@@ -285,7 +285,7 @@ describe('AuthService', () => {
     });
   });
 
-  describe('loginWithLocalStrategy', () => {
+  describe('signInWithLocalStrategy', () => {
     const validLoginData = {
       username: 'johndoe',
       password: 'StrongPassword123!',
@@ -310,7 +310,7 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act
-      const result = await service.loginWithLocalStrategy(
+      const result = await service.signInWithLocalStrategy(
         validLoginData.username,
         validLoginData.password,
       );
@@ -345,7 +345,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           validLoginData.username,
           validLoginData.password,
         ),
@@ -369,7 +369,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           validLoginData.username,
           'wrongpassword',
         ),
@@ -389,7 +389,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           validLoginData.username,
           validLoginData.password,
         ),
@@ -413,7 +413,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           validLoginData.username,
           validLoginData.password,
         ),
@@ -432,7 +432,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           validLoginData.username,
           validLoginData.password,
         ),
@@ -697,7 +697,7 @@ describe('AuthService', () => {
       const loginPromises = Array(5)
         .fill(null)
         .map(() =>
-          service.loginWithLocalStrategy(mockUser.username, 'password'),
+          service.signInWithLocalStrategy(mockUser.username, 'password'),
         );
 
       const results = await Promise.all(loginPromises);
@@ -749,13 +749,13 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act - Register then immediately login
-      const registrationResult = await service.registerUserWithLocalStrategy(
+      const registrationResult = await service.signUpUserWithLocalStrategy(
         'John Doe',
         'johndoe',
         'password123',
       );
 
-      const loginResult = await service.loginWithLocalStrategy(
+      const loginResult = await service.signInWithLocalStrategy(
         'johndoe',
         'password123',
       );
@@ -802,7 +802,7 @@ describe('AuthService', () => {
       redisService.get.mockResolvedValue(mockTokens.refreshToken);
 
       // Act
-      const loginResult = await service.loginWithLocalStrategy(
+      const loginResult = await service.signInWithLocalStrategy(
         mockUser.username,
         'password',
       );
@@ -848,7 +848,7 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act
-      const result = await service.loginWithLocalStrategy(
+      const result = await service.signInWithLocalStrategy(
         mockUser.username,
         'password',
       );
@@ -882,7 +882,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(maliciousUsername, 'password'),
+        service.signInWithLocalStrategy(maliciousUsername, 'password'),
       ).rejects.toThrow(UnauthorizedException);
 
       // Verify parameterized query was used
@@ -907,7 +907,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(longUsername, longPassword),
+        service.signInWithLocalStrategy(longUsername, longPassword),
       ).rejects.toThrow(UnauthorizedException);
 
       expect(databaseService.query).toHaveBeenCalledWith(expect.any(String), [
@@ -927,7 +927,7 @@ describe('AuthService', () => {
 
       // Act & Assert
       await expect(
-        service.loginWithLocalStrategy(
+        service.signInWithLocalStrategy(
           null as unknown as string,
           undefined as unknown as string,
         ),
@@ -1134,7 +1134,7 @@ describe('AuthService', () => {
       redisService.setex.mockResolvedValue();
 
       // Act - Login (stores token)
-      const loginResult = await service.loginWithLocalStrategy(
+      const loginResult = await service.signInWithLocalStrategy(
         mockUser.username,
         'password',
       );

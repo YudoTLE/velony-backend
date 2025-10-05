@@ -13,8 +13,8 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: {
-            registerUserWithLocalStrategy: jest.fn(),
-            loginWithLocalStrategy: jest.fn(),
+            signUpUserWithLocalStrategy: jest.fn(),
+            signInWithLocalStrategy: jest.fn(),
             refreshToken: jest.fn(),
           },
         },

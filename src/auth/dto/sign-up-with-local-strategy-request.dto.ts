@@ -1,6 +1,6 @@
 import { IsString, IsStrongPassword, MinLength } from 'class-validator';
 
-export class RegisterWithLocalStrategyRequestDto {
+export class SignUpWithLocalStrategyRequestDto {
   @IsString()
   @MinLength(3)
   name: string;
