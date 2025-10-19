@@ -17,8 +17,8 @@ export class UserDetailResponseDto {
   @Expose({ name: 'phone_number' })
   phoneNumber?: string;
 
-  @Expose({ name: 'profile_picture_url' })
-  profilePictureUrl?: string;
+  @Expose({ name: 'avatar_url' })
+  avatarUrl?: string;
 
   @Expose({ name: 'created_at' })
   createdAt: Date;

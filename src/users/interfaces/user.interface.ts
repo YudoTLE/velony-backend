@@ -6,7 +6,7 @@ export interface User {
   email?: string;
   password_hash?: string;
   phone_number?: string;
-  profile_picture_url?: string;
+  avatar_url?: string;
   created_at: Date;
   updated_at: Date;
 }

@@ -11,7 +11,7 @@ export class UsersService {
 
   async findAll(): Promise<UserSummary[]> {
     const query = `
-      SELECT uuid, name, username, profile_picture_url
+      SELECT uuid, name, username, avatar_url
       FROM users
       ORDER BY created_at DESC
     `;
@@ -22,7 +22,7 @@ export class UsersService {
 
   async findByUuid(uuid: string): Promise<UserDetail> {
     const query = `
-      SELECT uuid, name, username, email, phone_number, profile_picture_url, created_at, updated_at
+      SELECT uuid, name, username, email, phone_number, avatar_url, created_at, updated_at
       FROM users
       WHERE uuid = $1
     `;

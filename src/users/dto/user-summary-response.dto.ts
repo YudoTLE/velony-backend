@@ -11,6 +11,6 @@ export class UserSummaryResponseDto {
   @Expose()
   username: string;
 
-  @Expose({ name: 'profile_picture_url' })
-  profilePictureUrl?: string;
+  @Expose({ name: 'avatar_url' })
+  avatarUrl?: string;
 }
