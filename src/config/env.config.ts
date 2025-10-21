@@ -9,6 +9,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   Validate,
+  IsUrl,
 } from 'class-validator';
 
 import { isValidJwtExpiration } from '../auth/utils/jwt-expiration.util';
@@ -91,4 +92,19 @@ export class EnvironmentVariables {
   @IsString()
   @Validate(IsJwtExpirationConstraint)
   JWT_REFRESH_EXPIRATION?: string = '7d';
+
+  @IsUrl()
+  S3_ENDPOINT: string;
+
+  @IsString()
+  S3_REGION: string;
+
+  @IsString()
+  S3_BUCKET: string;
+
+  @IsString()
+  S3_ACCESS_KEY_ID: string;
+
+  @IsString()
+  S3_SECRET_ACCESS_KEY: string;
 }
