@@ -2,8 +2,8 @@ import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
 export class UserDetailResponseDto {
-  @Expose()
-  uuid: string;
+  @Expose({ name: 'uuid' })
+  id: string;
 
   @Expose()
   name: string;
