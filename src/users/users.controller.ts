@@ -26,7 +26,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('me')
-  async me(@Request() request): Promise<UserDetailResponseDto> {
+  async findMe(@Request() request): Promise<UserDetailResponseDto> {
     const user = await this.usersService.findByUuid(request.user.sub);
     return plainToInstance(UserDetailResponseDto, user);
   }
