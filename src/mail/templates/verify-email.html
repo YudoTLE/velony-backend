@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>Email Verification</title>
+    <style type="text/css">
+      @media (prefers-color-scheme: dark) {
+        .light-mode-only {
+          display: none !important;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        .dark-mode-only {
+          display: none !important;
+        }
+      }
+    </style>
+    <!--[if mso]>
+      <style type="text/css">
+        table {
+          border-collapse: collapse;
+        }
+      </style>
+    <![endif]-->
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f5f5f5">
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      width="100%"
+      style="margin: 0; padding: 0; background-color: #f5f5f5"
+    >
+      <tr>
+        <td style="padding: 40px 20px">
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            width="100%"
+            style="
+              max-width: 520px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              border-radius: 10px;
+              border: 1px solid #e5e5e5;
+            "
+          >
+            <!-- Header accent -->
+            <tr>
+              <td
+                style="
+                  height: 4px;
+                  background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+                  border-radius: 10px 10px 0 0;
+                "
+              >
+                <div
+                  style="
+                    height: 4px;
+                    background: linear-gradient(
+                      90deg,
+                      #8b5cf6 0%,
+                      #6366f1 100%
+                    );
+                  "
+                ></div>
+              </td>
+            </tr>
+
+            <!-- Main content -->
+            <tr>
+              <td style="padding: 40px 32px">
+                <!-- Title -->
+                <h1
+                  style="
+                    margin: 0 0 8px 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #1a1a1a;
+                    letter-spacing: -0.025em;
+                  "
+                >
+                  Verify your email
+                </h1>
+
+                <!-- Greeting -->
+                <p
+                  style="
+                    margin: 0 0 24px 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+                    font-size: 15px;
+                    color: #525252;
+                  "
+                >
+                  Hello {{name}},
+                </p>
+
+                <!-- Description -->
+                <p
+                  style="
+                    margin: 0 0 32px 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+                    font-size: 14px;
+                    color: #525252;
+                    line-height: 1.7;
+                  "
+                >
+                  Enter this verification code in the application to confirm
+                  your email address. This code will expire in
+                  <strong style="color: #1a1a1a">{{expires}}</strong>.
+                </p>
+
+                <!-- OTP Card -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  width="100%"
+                  style="margin-bottom: 32px"
+                >
+                  <tr>
+                    <td
+                      style="
+                        background-color: #f9fafb;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 8px;
+                        padding: 24px;
+                        text-align: center;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, 'Helvetica Neue', Arial, sans-serif;
+                          font-size: 14px;
+                          font-weight: 500;
+                          color: #6b7280;
+                          margin-bottom: 12px;
+                          text-transform: uppercase;
+                          letter-spacing: 0.05em;
+                        "
+                      >
+                        Verification Code
+                      </div>
+                      <div
+                        style="
+                          font-family:
+                            ui-monospace, SFMono-Regular, 'SF Mono', Menlo,
+                            Consolas, 'Courier New', monospace;
+                          font-size: 36px;
+                          font-weight: 700;
+                          color: #7c3aed;
+                          letter-spacing: 0.15em;
+                        "
+                      >
+                        {{otp}}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Security notice -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  width="100%"
+                  style="margin-bottom: 24px"
+                >
+                  <tr>
+                    <td
+                      style="
+                        background-color: #fef3c7;
+                        border-left: 3px solid #f59e0b;
+                        padding: 16px;
+                        border-radius: 4px;
+                      "
+                    >
+                      <p
+                        style="
+                          margin: 0;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, 'Helvetica Neue', Arial, sans-serif;
+                          font-size: 13px;
+                          color: #78350f;
+                          line-height: 1.6;
+                        "
+                      >
+                        <strong style="color: #78350f">Security tip:</strong>
+                        Never share this code with anyone. Our team will never
+                        ask for your verification code.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Footer text -->
+                <p
+                  style="
+                    margin: 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+                    font-size: 13px;
+                    color: #6b7280;
+                    text-align: center;
+                  "
+                >
+                  Didn't request this email? You can safely ignore it.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #f9fafb;
+                  padding: 24px 32px;
+                  border-top: 1px solid #e5e7eb;
+                  border-radius: 0 0 10px 10px;
+                "
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-family:
+                      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+                    font-size: 12px;
+                    color: #6b7280;
+                    text-align: center;
+                  "
+                >
+                  © 2025 VelonY. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

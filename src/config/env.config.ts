@@ -10,18 +10,14 @@ import {
   ValidatorConstraintInterface,
   Validate,
   IsUrl,
+  IsEmail,
 } from 'class-validator';
+import { isTimeString } from 'src/utlis/time';
 
-import { isValidJwtExpiration } from '../auth/utils/jwt-expiration.util';
-
-@ValidatorConstraint({ name: 'isJwtExpiration', async: false })
-export class IsJwtExpirationConstraint implements ValidatorConstraintInterface {
+@ValidatorConstraint({ name: 'isTimeString', async: false })
+export class IsTimeString implements ValidatorConstraintInterface {
   validate(value: string): boolean {
-    return isValidJwtExpiration(value);
-  }
-
-  defaultMessage(): string {
-    return 'JWT expiration must be in format like "15m", "7d", "2h", "30s", or "1y"';
+    return isTimeString(value);
   }
 }
 
@@ -81,7 +77,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  @Validate(IsJwtExpirationConstraint)
+  @Validate(IsTimeString)
   JWT_ACCESS_EXPIRATION?: string = '15m';
 
   @IsString()
@@ -90,7 +86,7 @@ export class EnvironmentVariables {
 
   @IsOptional()
   @IsString()
-  @Validate(IsJwtExpirationConstraint)
+  @Validate(IsTimeString)
   JWT_REFRESH_EXPIRATION?: string = '7d';
 
   @IsUrl()
@@ -107,4 +103,15 @@ export class EnvironmentVariables {
 
   @IsString()
   S3_SECRET_ACCESS_KEY: string;
+
+  @IsString()
+  RESEND_API_KEY: string;
+
+  @IsEmail()
+  EMAIL_FROM: string;
+
+  @IsOptional()
+  @IsString()
+  @Validate(IsTimeString)
+  EMAIL_TOKEN_EXPIRATION?: string = '5m';
 }

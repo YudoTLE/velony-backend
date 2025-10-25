@@ -11,13 +11,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
+import { convertTime } from 'src/utlis/time';
 
 import { AuthService } from './auth.service';
 import { SignUpWithLocalStrategyRequestDto } from './dto/sign-up-with-local-strategy-request.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { EnvironmentVariables } from '../config/env.config';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { convertJwtExpirationToMilliseconds } from './utils/jwt-expiration.util';
 
 @Controller('auth')
 export class AuthController {
@@ -39,12 +39,8 @@ export class AuthController {
     );
     const isProduction = this.configService.get('NODE_ENV') === 'production';
 
-    const accessTokenMaxAge = convertJwtExpirationToMilliseconds(
-      accessTokenExpiration,
-    );
-    const refreshTokenMaxAge = convertJwtExpirationToMilliseconds(
-      refreshTokenExpiration,
-    );
+    const accessTokenMaxAge = convertTime(accessTokenExpiration).milliseconds;
+    const refreshTokenMaxAge = convertTime(refreshTokenExpiration).milliseconds;
 
     response.cookie('access_token', accessToken, {
       httpOnly: true,
