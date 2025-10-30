@@ -91,7 +91,7 @@ export class UsersService {
       newPassword?: string;
       avatar?: Buffer;
     },
-  ): Promise<UserDetail> {
+  ): Promise<Partial<UserDetail>> {
     const updateFields: Array<[string, string]> = [];
 
     if (updates.oldPassword && updates.newPassword) {
@@ -124,17 +124,20 @@ export class UsersService {
       updateFields.push(['phone_number', updates.phone_number]);
     }
 
+    if (updateFields.length === 0) return {};
+
     const setClauses = updateFields.map(
       (field, index) => `${field[0]} = $${index + 1}`,
     );
+    const returningClauses = updateFields.map((field) => field[0]);
     const values = updateFields.map(([_, value]) => value);
 
     const query = `
-        UPDATE users
-        SET ${setClauses.join(', ')}
-        WHERE uuid = $${values.length + 1}
-        RETURNING uuid, name, username, email, phone_number, avatar_url, created_at, updated_at
-      `;
+      UPDATE users
+      SET ${setClauses.join(', ')}
+      WHERE uuid = $${values.length + 1}
+      RETURNING ${returningClauses}
+    `;
     const result = await this.databaseService.query(query, [
       ...values,
       userUuid,
