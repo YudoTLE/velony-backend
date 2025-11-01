@@ -53,7 +53,7 @@ export class UsersController {
     @Request() request,
     @Body() updates: UserUpdateRequestDto,
     @UploadedFile() avatar?: Express.Multer.File,
-  ): Promise<UserDetailResponseDto> {
+  ): Promise<Partial<UserDetailResponseDto>> {
     const user = await this.usersService.update(request.user.sub, {
       ...updates,
       avatar: avatar?.buffer,
@@ -66,7 +66,9 @@ export class UsersController {
   async verifyEmail(
     @Request() request,
     @Body('otp') otp: string,
-  ): Promise<string> {
-    return await this.usersService.verifyEmail(request.user.sub, otp);
+  ): Promise<Partial<UserDetailResponseDto>> {
+    return {
+      email: await this.usersService.verifyEmail(request.user.sub, otp),
+    };
   }
 }
