@@ -8,6 +8,8 @@ import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
 import { UsersModule } from './users/users.module';
+import { OtpService } from './otp/otp.service';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     StorageModule,
+    OtpModule,
   ],
+  providers: [OtpService],
 })
 export class AppModule {}

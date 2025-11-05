@@ -6,7 +6,6 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  Post,
   Request,
   UploadedFile,
   UseGuards,
@@ -60,15 +59,5 @@ export class UsersController {
     });
     if (!user) throw new NotFoundException('User not found');
     return plainToInstance(UserDetailResponseDto, user);
-  }
-
-  @Post('me/verify-email')
-  async verifyEmail(
-    @Request() request,
-    @Body('otp') otp: string,
-  ): Promise<Partial<UserDetailResponseDto>> {
-    return {
-      email: await this.usersService.verifyEmail(request.user.sub, otp),
-    };
   }
 }

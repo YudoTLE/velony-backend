@@ -4,8 +4,6 @@ import {
   MinLength,
   Matches,
   IsOptional,
-  IsEmail,
-  IsMobilePhone,
 } from 'class-validator';
 
 export class UserUpdateRequestDto {
@@ -23,14 +21,6 @@ export class UserUpdateRequestDto {
     message: 'Username can only contain letters, numbers, and underscores',
   })
   username?: string;
-
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-
-  @IsOptional()
-  @IsMobilePhone()
-  phone_number?: string;
 
   @IsOptional()
   @IsString()
