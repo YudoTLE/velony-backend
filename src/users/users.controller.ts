@@ -2,10 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  Post,
+  Put,
   NotFoundException,
   Param,
   ParseUUIDPipe,
-  Patch,
   Request,
   UploadedFile,
   UseGuards,
@@ -13,17 +14,25 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
+import { VerificationService } from 'src/verification/verification.service';
 
+import { UpdateUserAvatarResponseDto } from './dto/update-user-avatar-response.dto';
+import { UpdateUserEmailConfirmRequestDto } from './dto/update-user-email-confirm-request.dto';
+import { UpdateUserEmailConfirmResponseDto } from './dto/update-user-email-confirm-response.dto';
+import { UpdateUserEmailStartRequestDto } from './dto/update-user-email-start-request.dto';
+import { UpdateUserPasswordRequestDto } from './dto/update-user-password-request.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
-import { UserUpdateRequestDto } from './dto/user-update-request.dto';
 import { UsersService } from './users.service';
 import { JwtCookieAuthGuard } from '../auth/guards/jwt-cookie-auth.guard';
 
 @Controller('users')
 @UseGuards(JwtCookieAuthGuard)
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private verificationService: VerificationService,
+  ) {}
 
   @Get('me')
   async findMe(@Request() request): Promise<UserDetailResponseDto> {
@@ -46,18 +55,51 @@ export class UsersController {
     return plainToInstance(UserDetailResponseDto, user);
   }
 
-  @Patch('me')
-  @UseInterceptors(FileInterceptor('avatar'))
-  async updateMe(
+  @Post('me/email/start')
+  async updateEmailMeStart(
     @Request() request,
-    @Body() updates: UserUpdateRequestDto,
-    @UploadedFile() avatar?: Express.Multer.File,
-  ): Promise<Partial<UserDetailResponseDto>> {
-    const user = await this.usersService.update(request.user.sub, {
-      ...updates,
-      avatar: avatar?.buffer,
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return plainToInstance(UserDetailResponseDto, user);
+    @Body() data: UpdateUserEmailStartRequestDto,
+  ) {
+    await this.verificationService.issueEmailChange(
+      request.user.sub,
+      data.email,
+    );
+  }
+
+  @Post('me/email/confirm')
+  async updateEmailMeConfirm(
+    @Request() request,
+    @Body() data: UpdateUserEmailConfirmRequestDto,
+  ) {
+    const email = await this.verificationService.validateEmailChange(
+      request.user.sub,
+      data.otp,
+    );
+    return plainToInstance(UpdateUserEmailConfirmResponseDto, { email });
+  }
+
+  @Put('me/password')
+  async updatePasswordMe(
+    @Request() request,
+    @Body() data: UpdateUserPasswordRequestDto,
+  ) {
+    await this.usersService.updatePassword(
+      request.user.sub,
+      data.oldPassword,
+      data.newPassword,
+    );
+  }
+
+  @Put('me/avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateAvatarMe(
+    @Request() request,
+    @UploadedFile() avatar: Express.Multer.File,
+  ) {
+    const avatarUrl = await this.usersService.updateAvatar(
+      request.user.sub,
+      avatar.buffer,
+    );
+    return plainToInstance(UpdateUserAvatarResponseDto, { avatarUrl });
   }
 }

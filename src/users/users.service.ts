@@ -1,17 +1,11 @@
-import crypto from 'crypto';
-
 import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { QueryResult } from 'pg';
-import { MailService } from 'src/mail/mail.service';
 import { StorageService } from 'src/storage/storage.service';
-import { convertTime } from 'src/utlis/time';
 
 import { DatabaseService } from '../database/database.service';
 import { UserDetail } from './interfaces/user-detail.interface';
@@ -20,10 +14,8 @@ import { UserSummary } from './interfaces/user-summary.interface';
 @Injectable()
 export class UsersService {
   constructor(
-    private mailService: MailService,
     private databaseService: DatabaseService,
     private storageService: StorageService,
-    private configService: ConfigService,
   ) {}
 
   async findAll(): Promise<UserSummary[]> {
@@ -80,61 +72,6 @@ export class UsersService {
     return result.rows[0] ?? null;
   }
 
-  async update(
-    userUuid: string,
-    updates: {
-      name?: string;
-      username?: string;
-      oldPassword?: string;
-      newPassword?: string;
-      avatar?: Buffer;
-    },
-  ): Promise<Partial<UserDetail>> {
-    const updateFields: Array<[string, string]> = [];
-
-    if (updates.oldPassword && updates.newPassword) {
-      const newPasswordHash = await this.updatePassword(
-        userUuid,
-        updates.oldPassword,
-        updates.newPassword,
-      );
-      updateFields.push(['password_hash', newPasswordHash]);
-    }
-
-    if (updates.avatar) {
-      const avatarUrl = await this.updateAvatar(userUuid, updates.avatar);
-      updateFields.push(['avatar_url', avatarUrl]);
-    }
-
-    if (updates.name !== undefined) {
-      updateFields.push(['name', updates.name]);
-    }
-
-    if (updates.username !== undefined) {
-      updateFields.push(['username', updates.username]);
-    }
-
-    if (updateFields.length === 0) return {};
-
-    const setClauses = updateFields.map(
-      (field, index) => `${field[0]} = $${index + 1}`,
-    );
-    const returningClauses = updateFields.map((field) => field[0]);
-    const values = updateFields.map(([_, value]) => value);
-
-    const query = `
-      UPDATE users
-      SET ${setClauses.join(', ')}
-      WHERE uuid = $${values.length + 1}
-      RETURNING ${returningClauses}
-    `;
-    const result = await this.databaseService.query(query, [
-      ...values,
-      userUuid,
-    ]);
-    return result.rows[0];
-  }
-
   async updatePassword(
     userUuid: string,
     oldPassword: string,
@@ -171,7 +108,7 @@ export class UsersService {
         WHERE uuid = $2
       `;
       await this.databaseService.query(query, [newPasswordHash, userUuid]);
-    });
+    })();
 
     return newPasswordHash;
   }

@@ -11,20 +11,20 @@ import { MailService } from 'src/mail/mail.service';
 import { convertTime } from 'src/utlis/time';
 
 @Injectable()
-export class OtpService {
+export class VerificationService {
   constructor(
-    private databaseService: DatabaseService,
-    private mailService: MailService,
     private configService: ConfigService,
+    private mailService: MailService,
+    private databaseService: DatabaseService,
   ) {}
 
-  async sendEmail(userUuid: string, newEmail: string): Promise<void> {
+  async issueEmailChange(userUuid: string, newEmail: string): Promise<void> {
     const user = await (async () => {
       const query = `
-          SELECT id, name
-          FROM users
-          WHERE uuid = $1
-        `;
+        SELECT id, name
+        FROM users
+        WHERE uuid = $1
+      `;
       const result = await this.databaseService.query(query, [userUuid]);
       return result.rows[0];
     })();
@@ -50,16 +50,16 @@ export class OtpService {
 
     await (async () => {
       const query = `
-          INSERT INTO verifications (user_id, type, value, code, expires_at)
-          VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT (user_id, type)
-          WHERE verified_at IS NULL
-          DO UPDATE
-            SET value = EXCLUDED.value,
-                code = EXCLUDED.code,
-                expires_at = EXCLUDED.expires_at,
-                initiated_at = now();
-        `;
+        INSERT INTO verifications (user_id, type, value, code, expires_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id, type)
+        WHERE verified_at IS NULL
+        DO UPDATE
+          SET value = EXCLUDED.value,
+              code = EXCLUDED.code,
+              expires_at = EXCLUDED.expires_at,
+              initiated_at = now();
+      `;
       await this.databaseService.query(query, [
         user.id,
         'email',
@@ -72,7 +72,7 @@ export class OtpService {
     await this.mailService.sendEmail(email);
   }
 
-  async verifyEmail(userUuid: string, otp: string): Promise<string> {
+  async validateEmailChange(userUuid: string, otp: string): Promise<string> {
     const user = await (async () => {
       const query = `
         SELECT id
@@ -88,12 +88,12 @@ export class OtpService {
 
     const verification = await (async () => {
       const query = `
-          SELECT id, value, code, expires_at
-          FROM verifications
-          WHERE user_id = $1
-            AND type = $2
-            AND verified_at IS NULL
-        `;
+        SELECT id, value, code, expires_at
+        FROM verifications
+        WHERE user_id = $1
+          AND type = $2
+          AND verified_at IS NULL
+      `;
       const result = await this.databaseService.query(query, [
         user.id,
         'email',
@@ -114,19 +114,10 @@ export class OtpService {
 
     await (async () => {
       const query = `
-          UPDATE users
-          SET email = $1
-          WHERE id = $2
-        `;
-      await this.databaseService.query(query, [verification.value, user.id]);
-    })();
-
-    await (async () => {
-      const query = `
-          UPDATE verifications
-          SET verified_at = now()
-          WHERE id = $1
-        `;
+        UPDATE verifications
+        SET verified_at = now()
+        WHERE id = $1
+      `;
       await this.databaseService.query(query, [verification.id]);
     })();
 
