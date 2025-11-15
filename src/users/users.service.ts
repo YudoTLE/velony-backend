@@ -72,6 +72,32 @@ export class UsersService {
     return result.rows[0] ?? null;
   }
 
+  async updateUsername(userUuid: string, newUsername: string): Promise<string> {
+    await (async () => {
+      const query = `
+        UPDATE users
+        SET username = $1
+        WHERE uuid = $2
+      `;
+      await this.databaseService.query(query, [newUsername, userUuid]);
+    })();
+
+    return newUsername;
+  }
+
+  async updateName(userUuid: string, newName: string): Promise<string> {
+    await (async () => {
+      const query = `
+        UPDATE users
+        SET name = $1
+        WHERE uuid = $2
+      `;
+      await this.databaseService.query(query, [newName, userUuid]);
+    })();
+
+    return newName;
+  }
+
   async updatePassword(
     userUuid: string,
     oldPassword: string,
@@ -120,6 +146,15 @@ export class UsersService {
       newAvatar,
       'image/png',
     );
+
+    await (async () => {
+      const query = `
+        UPDATE users
+        SET avatar_url = $1
+        WHERE uuid = $2
+      `;
+      await this.databaseService.query(query, [url, userUuid]);
+    })();
 
     return url;
   }

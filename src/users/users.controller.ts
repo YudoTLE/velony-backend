@@ -20,7 +20,11 @@ import { UpdateUserAvatarResponseDto } from './dto/update-user-avatar-response.d
 import { UpdateUserEmailConfirmRequestDto } from './dto/update-user-email-confirm-request.dto';
 import { UpdateUserEmailConfirmResponseDto } from './dto/update-user-email-confirm-response.dto';
 import { UpdateUserEmailStartRequestDto } from './dto/update-user-email-start-request.dto';
+import { UpdateUserNameRequestDto } from './dto/update-user-name-request.dto';
+import { UpdateUserNameResponseDto } from './dto/update-user-name-response.dto';
 import { UpdateUserPasswordRequestDto } from './dto/update-user-password-request.dto';
+import { UpdateUserUsernameRequestDto } from './dto/update-user-username-request.dto';
+import { UpdateUserUsernameResponseDto } from './dto/update-user-username-response.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
 import { UsersService } from './users.service';
@@ -53,6 +57,27 @@ export class UsersController {
     const user = await this.usersService.findByUuid(uuid);
     if (!user) throw new NotFoundException('User not found');
     return plainToInstance(UserDetailResponseDto, user);
+  }
+
+  @Put('me/username')
+  async updateUsername(
+    @Request() request,
+    @Body() data: UpdateUserUsernameRequestDto,
+  ) {
+    const username = await this.usersService.updateUsername(
+      request.user.sub,
+      data.username,
+    );
+    return plainToInstance(UpdateUserUsernameResponseDto, { username });
+  }
+
+  @Put('me/name')
+  async updateName(@Request() request, @Body() data: UpdateUserNameRequestDto) {
+    const name = await this.usersService.updateName(
+      request.user.sub,
+      data.name,
+    );
+    return plainToInstance(UpdateUserNameResponseDto, { name });
   }
 
   @Post('me/email/start')
