@@ -98,6 +98,19 @@ export class UsersService {
     return newName;
   }
 
+  async updateEmail(userUuid: string, newEmail: string): Promise<string> {
+    await (async () => {
+      const query = `
+        UPDATE users
+        SET email = $1
+        WHERE uuid = $2
+      `;
+      await this.databaseService.query(query, [newEmail, userUuid]);
+    })();
+
+    return newEmail;
+  }
+
   async updatePassword(
     userUuid: string,
     oldPassword: string,

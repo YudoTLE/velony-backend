@@ -100,6 +100,7 @@ export class UsersController {
       request.user.sub,
       data.otp,
     );
+    await this.usersService.updateEmail(request.user.sub, email);
     return plainToInstance(UpdateUserEmailConfirmResponseDto, { email });
   }
 
