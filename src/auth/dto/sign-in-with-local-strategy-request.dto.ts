@@ -1,9 +1,9 @@
 import { IsString } from 'class-validator';
 
 export class SignInWithLocalStrategyRequestDto {
-  @IsString()
+  @IsString({ message: 'Username must be a string' })
   username: string;
 
-  @IsString()
+  @IsString({ message: 'Password must be a string' })
   password: string;
 }
