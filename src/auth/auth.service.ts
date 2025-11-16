@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { EnvironmentVariables } from 'src/config/env.config';
 import { DatabaseService } from 'src/database/database.service';
+import { convertTime } from 'src/utlis/time';
 
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
@@ -97,10 +98,10 @@ export class AuthService {
     const refreshExpiration = this.configService.get('JWT_REFRESH_EXPIRATION');
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: accessExpiration,
+      expiresIn: convertTime(accessExpiration).seconds,
     });
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: refreshExpiration,
+      expiresIn: convertTime(refreshExpiration).seconds,
     });
 
     return {

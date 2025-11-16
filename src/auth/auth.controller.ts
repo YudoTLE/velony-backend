@@ -7,7 +7,7 @@ import {
   Request,
   Res,
   UseGuards,
-  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
@@ -104,7 +104,7 @@ export class AuthController {
   ): Promise<Pick<JwtPayload, 'sub'>> {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
-      throw new NotFoundException('Refresh token missing');
+      throw new UnauthorizedException('Refresh token missing');
     }
 
     const {
