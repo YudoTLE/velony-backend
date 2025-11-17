@@ -12,7 +12,7 @@ import { UserDetail } from './interfaces/user-detail.interface';
 import { UserSummary } from './interfaces/user-summary.interface';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     private databaseService: DatabaseService,
     private storageService: StorageService,

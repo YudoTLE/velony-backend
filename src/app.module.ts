@@ -9,7 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './users/user.module';
 import { VerificationModule } from './verification/verification.module';
 import { VerificationService } from './verification/verification.service';
 
@@ -22,7 +22,7 @@ import { VerificationService } from './verification/verification.service';
     RedisModule,
     MailModule,
     DatabaseModule,
-    UsersModule,
+    UserModule,
     AuthModule,
     StorageModule,
     VerificationModule,

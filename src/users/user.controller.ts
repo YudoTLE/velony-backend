@@ -27,14 +27,14 @@ import { UpdateUserUsernameRequestDto } from './dto/update-user-username-request
 import { UpdateUserUsernameResponseDto } from './dto/update-user-username-response.dto';
 import { UserDetailResponseDto } from './dto/user-detail-response.dto';
 import { UserSummaryResponseDto } from './dto/user-summary-response.dto';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { JwtCookieAuthGuard } from '../auth/guards/jwt-cookie-auth.guard';
 
 @Controller('users')
 @UseGuards(JwtCookieAuthGuard)
-export class UsersController {
+export class UserController {
   constructor(
-    private usersService: UsersService,
+    private usersService: UserService,
     private verificationService: VerificationService,
   ) {}
 
