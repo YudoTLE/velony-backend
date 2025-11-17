@@ -4,14 +4,12 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { validate } from './config/env.validation';
 import { ConversationModule } from './conversation/conversation.module';
-import { ConversationService } from './conversation/conversation.service';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
 import { UserModule } from './user/user.module';
 import { VerificationModule } from './verification/verification.module';
-import { VerificationService } from './verification/verification.service';
 
 @Module({
   imports: [
@@ -28,6 +26,5 @@ import { VerificationService } from './verification/verification.service';
     VerificationModule,
     ConversationModule,
   ],
-  providers: [VerificationService, ConversationService],
 })
 export class AppModule {}
