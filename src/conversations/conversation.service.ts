@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
-export class ConversationsService {
+export class ConversationService {
   constructor(private databaseService: DatabaseService) {}
 
   async findAllByUserUuid(userUuid: string) {

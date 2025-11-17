@@ -9,14 +9,14 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { JwtCookieAuthGuard } from 'src/auth/guards/jwt-cookie-auth.guard';
 
-import { ConversationsService } from './conversations.service';
+import { ConversationService } from './conversation.service';
 import { ConversationDetailResponseDto } from './dto/conversation-detail-response.dto';
 import { ConversationSummaryResponseDto } from './dto/conversation-summary-response.dto';
 
 @Controller('conversations')
 @UseGuards(JwtCookieAuthGuard)
-export class ConversationsController {
-  constructor(private conversationsService: ConversationsService) {}
+export class ConversationController {
+  constructor(private conversationsService: ConversationService) {}
 
   @Get()
   async findAll(@Request() request) {
