@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AuthModule } from './auth/auth.module';
 import { validate } from './config/env.validation';
+import { ConversationsModule } from './conversations/conversations.module';
+import { ConversationsService } from './conversations/conversations.service';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
@@ -24,7 +26,8 @@ import { VerificationService } from './verification/verification.service';
     AuthModule,
     StorageModule,
     VerificationModule,
+    ConversationsModule,
   ],
-  providers: [VerificationService],
+  providers: [VerificationService, ConversationsService],
 })
 export class AppModule {}
