@@ -34,19 +34,19 @@ import { JwtCookieAuthGuard } from '../auth/guards/jwt-cookie-auth.guard';
 @UseGuards(JwtCookieAuthGuard)
 export class UserController {
   constructor(
-    private usersService: UserService,
+    private userService: UserService,
     private verificationService: VerificationService,
   ) {}
 
   @Get('me')
   async findMe(@Request() request): Promise<UserDetailResponseDto> {
-    const user = await this.usersService.findByUuid(request.user.sub);
+    const user = await this.userService.findByUuid(request.user.sub);
     return plainToInstance(UserDetailResponseDto, user);
   }
 
   @Get()
   async findAll(): Promise<UserSummaryResponseDto[]> {
-    const users = await this.usersService.findAll();
+    const users = await this.userService.findAll();
     return plainToInstance(UserSummaryResponseDto, users);
   }
 
@@ -54,7 +54,7 @@ export class UserController {
   async findOne(
     @Param('uuid', ParseUUIDPipe) uuid: string,
   ): Promise<UserDetailResponseDto> {
-    const user = await this.usersService.findByUuid(uuid);
+    const user = await this.userService.findByUuid(uuid);
     if (!user) throw new NotFoundException('User not found');
     return plainToInstance(UserDetailResponseDto, user);
   }
@@ -64,7 +64,7 @@ export class UserController {
     @Request() request,
     @Body() data: UpdateUserUsernameRequestDto,
   ) {
-    const username = await this.usersService.updateUsername(
+    const username = await this.userService.updateUsername(
       request.user.sub,
       data.username,
     );
@@ -73,7 +73,7 @@ export class UserController {
 
   @Put('me/name')
   async updateName(@Request() request, @Body() data: UpdateUserNameRequestDto) {
-    const name = await this.usersService.updateName(
+    const name = await this.userService.updateName(
       request.user.sub,
       data.name,
     );
@@ -100,7 +100,7 @@ export class UserController {
       request.user.sub,
       data.otp,
     );
-    await this.usersService.updateEmail(request.user.sub, email);
+    await this.userService.updateEmail(request.user.sub, email);
     return plainToInstance(UpdateUserEmailConfirmResponseDto, { email });
   }
 
@@ -109,7 +109,7 @@ export class UserController {
     @Request() request,
     @Body() data: UpdateUserPasswordRequestDto,
   ) {
-    await this.usersService.updatePassword(
+    await this.userService.updatePassword(
       request.user.sub,
       data.oldPassword,
       data.newPassword,
@@ -122,7 +122,7 @@ export class UserController {
     @Request() request,
     @UploadedFile() avatar: Express.Multer.File,
   ) {
-    const avatarUrl = await this.usersService.updateAvatar(
+    const avatarUrl = await this.userService.updateAvatar(
       request.user.sub,
       avatar.buffer,
     );

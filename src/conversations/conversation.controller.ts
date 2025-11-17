@@ -16,13 +16,13 @@ import { ConversationSummaryResponseDto } from './dto/conversation-summary-respo
 @Controller('conversations')
 @UseGuards(JwtCookieAuthGuard)
 export class ConversationController {
-  constructor(private conversationsService: ConversationService) {}
+  constructor(private conversationService: ConversationService) {}
 
   @Get()
   async findAll(@Request() request) {
     return plainToInstance(
       ConversationSummaryResponseDto,
-      await this.conversationsService.findAllByUserUuid(request.user.sub),
+      await this.conversationService.findAllByUserUuid(request.user.sub),
     );
   }
 
@@ -32,7 +32,7 @@ export class ConversationController {
   ): Promise<ConversationDetailResponseDto> {
     return plainToInstance(
       ConversationDetailResponseDto,
-      await this.conversationsService.findByUuid(uuid),
+      await this.conversationService.findByUuid(uuid),
     );
   }
 }
