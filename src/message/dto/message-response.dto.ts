@@ -5,8 +5,11 @@ export class MessageResponseDto {
   @Expose({ name: 'uuid' })
   id: string;
 
+  @Expose({ name: 'previous_uuid' })
+  previousId: string | null;
+
   @Expose({ name: 'user_uuid' })
-  userId: string;
+  userId: string | null;
 
   @Expose()
   content: string;

@@ -85,8 +85,10 @@ export class MessageService {
           m.content,
           m.created_at,
           m.updated_at,
+          pm.uuid AS previous_uuid,
           u.uuid AS user_uuid
         FROM messages m
+        LEFT JOIN messages pm ON pm.id = m.previous_id
         LEFT JOIN users u ON m.user_id = u.id
         WHERE m.conversation_id = $1
           ${cursorCondition}
