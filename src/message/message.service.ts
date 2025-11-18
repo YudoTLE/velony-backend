@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 
+import { CreateMessageRequestDto } from './dto/create-message-request.dto';
+
 @Injectable()
 export class MessageService {
   constructor(private databaseService: DatabaseService) {}
@@ -105,5 +107,66 @@ export class MessageService {
       ...m,
       is_self: m.user_uuid === retrieverUuid,
     }));
+  }
+
+  async create(
+    conversationUuid: string,
+    requesterUuid: string,
+    data: CreateMessageRequestDto,
+  ) {
+    const [user, conversation] = await Promise.all([
+      (async () => {
+        const query = `
+          SELECT id
+          FROM users
+          WHERE uuid = $1
+        `;
+        const result = await this.databaseService.query(query, [requesterUuid]);
+        return result.rows[0];
+      })(),
+      (async () => {
+        const query = `
+          SELECT id
+          FROM conversations
+          WHERE uuid = $1
+        `;
+        const result = await this.databaseService.query(query, [
+          conversationUuid,
+        ]);
+        return result.rows[0];
+      })(),
+    ]);
+    if (!user) throw new NotFoundException('User not found');
+    if (!conversation) throw new NotFoundException('Conversation not found');
+
+    const isResourceOwner = await (async () => {
+      const query = `
+        SELECT 1
+        FROM user_conversations
+        WHERE user_id = $1 AND conversation_id = $2
+      `;
+      const result = await this.databaseService.query(query, [
+        user.id,
+        conversation.id,
+      ]);
+      return !!result.rows[0];
+    })();
+    if (!isResourceOwner) throw new NotFoundException('Conversation not found');
+
+    const newMessage = await (async () => {
+      const query = `
+        INSERT INTO messages (user_id, conversation_id, content)
+        VALUES ($1, $2, $3)
+        RETURNING uuid
+      `;
+      const result = await this.databaseService.query(query, [
+        user.id,
+        conversation.id,
+        data.content,
+      ]);
+      return result.rows[0];
+    })();
+
+    return newMessage;
   }
 }

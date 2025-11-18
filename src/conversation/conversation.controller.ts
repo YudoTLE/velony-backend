@@ -1,14 +1,18 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
+  Post,
   Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { JwtCookieAuthGuard } from 'src/auth/guards/jwt-cookie-auth.guard';
+import { CreateMessageRequestDto } from 'src/message/dto/create-message-request.dto';
+import { CreateMessageResponseDto } from 'src/message/dto/create-message-response.dto';
 import { MessageResponseDto } from 'src/message/dto/message-response.dto';
 import { MessageService } from 'src/message/message.service';
 
@@ -56,6 +60,18 @@ export class ConversationController {
         request.user.sub,
         query,
       ),
+    );
+  }
+
+  @Post(':uuid/messages')
+  async createMessage(
+    @Request() request,
+    @Param('uuid', ParseUUIDPipe) uuid: string,
+    @Body() data: CreateMessageRequestDto,
+  ) {
+    return plainToInstance(
+      CreateMessageResponseDto,
+      await this.messageService.create(uuid, request.user.sub, data),
     );
   }
 }
