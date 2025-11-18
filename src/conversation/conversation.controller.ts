@@ -19,7 +19,7 @@ import { MessageService } from 'src/message/message.service';
 import { ConversationService } from './conversation.service';
 import { ConversationDetailResponseDto } from './dto/conversation-detail-response.dto';
 import { ConversationSummaryResponseDto } from './dto/conversation-summary-response.dto';
-import { ListMessagesQueryDto } from './dto/list-messages-query.dto';
+import { ListMessagesQueryDto } from '../message/dto/list-messages-query.dto';
 
 @Controller('conversations')
 @UseGuards(JwtCookieAuthGuard)
