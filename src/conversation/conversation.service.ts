@@ -112,4 +112,16 @@ export class ConversationService {
       users,
     };
   }
+
+  async findAllParticipantUUIDs(conversationId: string) {
+    const query = `
+      SELECT u.uuid
+      FROM user_conversations uc
+      JOIN users u
+      ON u.id = uc.user_id
+      WHERE uc.conversation_id = $1
+    `;
+    const result = await this.databaseService.query(query, [conversationId]);
+    return result.rows.map((u) => u.uuid);
+  }
 }

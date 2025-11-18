@@ -1,4 +1,4 @@
-import { IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateMessageRequestDto {
   @IsString({ message: () => 'Content must be a string' })
@@ -7,4 +7,8 @@ export class CreateMessageRequestDto {
       `Content must be at most ${constraints[0]} characters`,
   })
   content: string;
+
+  @IsOptional()
+  @IsUUID(4, { message: () => 'Optimistic ID must be a UUID' })
+  optimisticId?: string;
 }
