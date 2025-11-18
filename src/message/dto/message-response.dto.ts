@@ -16,4 +16,7 @@ export class MessageResponseDto {
 
   @Expose({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Expose({ name: 'is_self' })
+  isSelf: boolean;
 }

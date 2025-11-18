@@ -45,12 +45,17 @@ export class ConversationController {
 
   @Get(':uuid/messages')
   async findAllMessages(
+    @Request() request,
     @Param('uuid', ParseUUIDPipe) uuid: string,
     @Query() query: ListMessagesQueryDto,
   ) {
     return plainToInstance(
       MessageResponseDto,
-      await this.messageService.findAllByConversationUuid(uuid, query),
+      await this.messageService.findAllByConversationUuid(
+        uuid,
+        request.user.sub,
+        query,
+      ),
     );
   }
 }

@@ -7,20 +7,47 @@ export class MessageService {
 
   async findAllByConversationUuid(
     conversationUuid: string,
+    retrieverUuid: string,
     options: { before?: string; limit?: number } = {},
   ) {
-    const conversation = await (async () => {
+    const [user, conversation] = await Promise.all([
+      (async () => {
+        const query = `
+          SELECT id
+          FROM users
+          WHERE uuid = $1
+        `;
+        const result = await this.databaseService.query(query, [retrieverUuid]);
+        return result.rows[0];
+      })(),
+      (async () => {
+        const query = `
+          SELECT id
+          FROM conversations
+          WHERE uuid = $1
+        `;
+        const result = await this.databaseService.query(query, [
+          conversationUuid,
+        ]);
+        return result.rows[0];
+      })(),
+    ]);
+    if (!user) throw new NotFoundException('User not found');
+    if (!conversation) throw new NotFoundException('Conversation not found');
+
+    const isResourceOwner = await (async () => {
       const query = `
-        SELECT id
-        FROM conversations
-        WHERE uuid = $1
+        SELECT 1
+        FROM user_conversations
+        WHERE user_id = $1 AND conversation_id = $2
       `;
       const result = await this.databaseService.query(query, [
-        conversationUuid,
+        user.id,
+        conversation.id,
       ]);
-      return result.rows[0];
+      return !!result.rows[0];
     })();
-    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (!isResourceOwner) throw new NotFoundException('Conversation not found');
 
     const messageCursor = await (async () => {
       if (!options.before) return null;
@@ -38,17 +65,17 @@ export class MessageService {
 
     const messages = await (async () => {
       const params = [conversation.id];
-      let paramIndex = 1;
+      let paramIndex = 2;
 
       let cursorCondition = '';
       if (options.before) {
-        cursorCondition = `AND m.id < $${++paramIndex}`;
+        cursorCondition = `AND m.id < $${paramIndex++}`;
         params.push(messageCursor.id);
       }
 
       let limitClause = '';
       if (options.limit) {
-        limitClause = `LIMIT $${++paramIndex}`;
+        limitClause = `LIMIT $${paramIndex++}`;
         params.push(options.limit);
       }
 
@@ -71,6 +98,9 @@ export class MessageService {
       return result.rows;
     })();
 
-    return messages;
+    return messages.map((m) => ({
+      ...m,
+      is_self: m.user_uuid === retrieverUuid,
+    }));
   }
 }
