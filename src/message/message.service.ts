@@ -95,6 +95,7 @@ export class MessageService {
       `;
 
       const result = await this.databaseService.query(query, params);
+      result.rows.reverse();
       return result.rows;
     })();
 
