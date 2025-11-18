@@ -102,7 +102,14 @@ export class ConversationService {
       return result.rows;
     })();
 
-    const { id, ...conversationWithoutId } = conversation;
-    return { ...conversationWithoutId, users };
+    return {
+      uuid: conversation.uuid,
+      title: conversation.title,
+      description: conversation.description,
+      thumbnail_url: conversation.thumbnail_url,
+      created_at: conversation.created_at,
+      updated_at: conversation.updated_at,
+      users,
+    };
   }
 }
