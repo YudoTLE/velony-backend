@@ -6,6 +6,7 @@ import { validate } from './config/env.validation';
 import { ConversationModule } from './conversation/conversation.module';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
+import { MessageModule } from './message/message.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
 import { UserModule } from './user/user.module';
@@ -25,6 +26,7 @@ import { VerificationModule } from './verification/verification.module';
     StorageModule,
     VerificationModule,
     ConversationModule,
+    MessageModule,
   ],
 })
 export class AppModule {}
