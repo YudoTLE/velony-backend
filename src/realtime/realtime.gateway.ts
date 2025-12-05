@@ -48,6 +48,7 @@ export class RealtimeGateway
     return cookies['access_token'] || null;
   }
 
+  // TODO: clean this up
   async handleConnection(client: Socket) {
     // console.log('[WS] Connection attempt started');
     // console.log('[WS] Headers:', client.handshake.headers);
@@ -90,6 +91,7 @@ export class RealtimeGateway
     }
   }
 
+  // TODO: clean this up
   handleDisconnect(client: Socket) {
     // console.log('[WS] Disconnected:', client.data.user?.sub);
   }
