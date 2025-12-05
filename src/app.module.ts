@@ -1,15 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { AuthModule } from './auth/auth.module';
 import { validate } from './config/env.validation';
-import { ConversationModule } from './conversation/conversation.module';
+import { ConversationsModule } from './conversations/conversations.module';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
-import { MessageModule } from './message/message.module';
+import { MessagesModule } from './messages/messages.module';
+import { RealtimeModule } from './realtime/realtime.module';
 import { RedisModule } from './redis/redis.module';
 import { StorageModule } from './storage/storage.module';
-import { UserModule } from './user/user.module';
+import { TestModule } from './test/test.module';
+import { UserConversationsModule } from './user-conversations/user-conversations.module';
+import { UsersModule } from './users/users.module';
 import { VerificationModule } from './verification/verification.module';
 
 @Module({
@@ -18,15 +22,19 @@ import { VerificationModule } from './verification/verification.module';
       isGlobal: true,
       validate,
     }),
+    EventEmitterModule.forRoot(),
     RedisModule,
     MailModule,
     DatabaseModule,
-    UserModule,
+    UsersModule,
     AuthModule,
     StorageModule,
     VerificationModule,
-    ConversationModule,
-    MessageModule,
+    ConversationsModule,
+    MessagesModule,
+    RealtimeModule,
+    UserConversationsModule,
+    TestModule,
   ],
 })
 export class AppModule {}

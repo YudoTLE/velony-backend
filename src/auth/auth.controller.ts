@@ -10,20 +10,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
+import { type Response } from 'express';
+import { EnvironmentVariables } from 'src/config/env.config';
 import { convertTime } from 'src/utlis/time';
 
 import { AuthService } from './auth.service';
 import { SignUpWithLocalStrategyRequestDto } from './dto/sign-up-with-local-strategy-request.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { EnvironmentVariables } from '../config/env.config';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private authService: AuthService,
-    private configService: ConfigService<EnvironmentVariables>,
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService<EnvironmentVariables>,
   ) {}
 
   private setAuthCookies(

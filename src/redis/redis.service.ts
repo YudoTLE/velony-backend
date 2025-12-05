@@ -7,7 +7,9 @@ import { EnvironmentVariables } from 'src/config/env.config';
 export class RedisService implements OnModuleDestroy {
   private client: Redis;
 
-  constructor(private configService: ConfigService<EnvironmentVariables>) {
+  constructor(
+    private readonly configService: ConfigService<EnvironmentVariables>,
+  ) {
     this.client = new Redis({
       host: this.configService.get('REDIS_HOST'),
       port: this.configService.get('REDIS_PORT'),

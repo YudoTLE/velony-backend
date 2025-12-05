@@ -12,7 +12,7 @@ import { Email } from './interface/email.interface';
 export class MailService {
   private resend: Resend;
 
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.resend = new Resend(this.configService.get('RESEND_API_KEY'));
   }
 

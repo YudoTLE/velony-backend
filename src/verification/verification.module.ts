@@ -1,9 +1,13 @@
-import { Module } from '@nestjs/common';
-import { JwtCookieStrategy } from 'src/auth/strategies/jwt-cookie.strategy';
+import { forwardRef, Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
+import { UsersModule } from 'src/users/users.module';
 
+import { VerificationRepository } from './verification.repository';
 import { VerificationService } from './verification.service';
 
 @Module({
-  providers: [VerificationService, JwtCookieStrategy],
+  providers: [VerificationService, VerificationRepository],
+  imports: [forwardRef(() => AuthModule), forwardRef(() => UsersModule)],
+  exports: [VerificationService],
 })
 export class VerificationModule {}

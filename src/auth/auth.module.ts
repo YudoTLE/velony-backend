@@ -1,15 +1,18 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from 'src/users/users.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { JwtCookieStrategy } from './strategies/jwt-cookie.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { DatabaseModule } from '../database/database.module';
 
 @Module({
+  controllers: [AuthController],
+  providers: [AuthService, LocalStrategy, JwtCookieStrategy],
   imports: [
-    DatabaseModule,
+    forwardRef(() => UsersModule),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_ACCESS_SECRET'),
@@ -20,8 +23,6 @@ import { DatabaseModule } from '../database/database.module';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, LocalStrategy],
-  exports: [AuthService],
+  exports: [JwtCookieStrategy],
 })
 export class AuthModule {}

@@ -1,36 +1,31 @@
 import crypto from 'crypto';
 
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseService } from 'src/database/database.service';
+import { UserNotFoundException } from 'src/exceptions/user-not-found.excpetion';
+import { VerificationCodeInvalidException } from 'src/exceptions/verification-code-invalid.exception';
+import { VerificationExpiredException } from 'src/exceptions/verification-expired.exception';
+import { VerificationNotFoundException } from 'src/exceptions/verification-not-found.exception';
 import { MailService } from 'src/mail/mail.service';
+import { UsersRepository } from 'src/users/users.repository';
 import { convertTime } from 'src/utlis/time';
+
+import { VerificationRepository } from './verification.repository';
 
 @Injectable()
 export class VerificationService {
   constructor(
-    private configService: ConfigService,
-    private mailService: MailService,
-    private databaseService: DatabaseService,
+    private readonly configService: ConfigService,
+    private readonly mailService: MailService,
+    private readonly verificationRepository: VerificationRepository,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async issueEmailChange(userUuid: string, newEmail: string): Promise<void> {
-    const user = await (async () => {
-      const query = `
-        SELECT id, name
-        FROM users
-        WHERE uuid = $1
-      `;
-      const result = await this.databaseService.query(query, [userUuid]);
-      return result.rows[0];
-    })();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const user = await this.usersRepository.findOneBy('uuid', userUuid, {
+      fields: ['id', 'name'],
+    });
+    if (!user) throw new UserNotFoundException();
 
     const expiration = convertTime(
       this.configService.getOrThrow('EMAIL_TOKEN_EXPIRATION'),
@@ -48,78 +43,48 @@ export class VerificationService {
       }),
     };
 
-    await (async () => {
-      const query = `
-        INSERT INTO verifications (user_id, type, value, code, expires_at)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (user_id, type)
-        WHERE verified_at IS NULL
-        DO UPDATE
-          SET value = EXCLUDED.value,
-              code = EXCLUDED.code,
-              expires_at = EXCLUDED.expires_at,
-              initiated_at = now();
-      `;
-      await this.databaseService.query(query, [
-        user.id,
-        'email',
-        newEmail,
-        otp,
-        new Date(Date.now() + expiration.milliseconds),
-      ]);
-    })();
+    await this.verificationRepository.createOne({
+      user_id: user.id,
+      type: 'email',
+      value: newEmail,
+      code: otp,
+      expires_at: new Date(Date.now() + expiration.milliseconds).toISOString(),
+    });
 
     await this.mailService.sendEmail(email);
   }
 
   async validateEmailChange(userUuid: string, otp: string): Promise<string> {
-    const user = await (async () => {
-      const query = `
-        SELECT id
-        FROM users
-        WHERE uuid = $1
-      `;
-      const result = await this.databaseService.query(query, [userUuid]);
-      return result.rows[0];
-    })();
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const userId = await this.usersRepository
+      .findOneBy('uuid', userUuid, { fields: ['id'] })
+      .then((u) => u?.id);
+    if (!userId) throw new NotFoundException();
 
-    const verification = await (async () => {
-      const query = `
-        SELECT id, value, code, expires_at
-        FROM verifications
-        WHERE user_id = $1
-          AND type = $2
-          AND verified_at IS NULL
-      `;
-      const result = await this.databaseService.query(query, [
-        user.id,
-        'email',
-      ]);
-      return result.rows[0];
-    })();
+    const verification = await this.verificationRepository.findOneBy(
+      'user_id',
+      userId,
+      {
+        type: 'email',
+        verified: false,
+        fields: ['id', 'value', 'code', 'expires_at'],
+      },
+    );
+
     if (!verification) {
-      throw new NotFoundException('No pending email verification found');
+      throw new VerificationNotFoundException();
     }
 
     if (new Date() > new Date(verification.expires_at)) {
-      throw new BadRequestException('Verification code has expired');
+      throw new VerificationExpiredException();
     }
 
     if (verification.code !== otp) {
-      throw new BadRequestException('Invalid verification code');
+      throw new VerificationCodeInvalidException();
     }
 
-    await (async () => {
-      const query = `
-        UPDATE verifications
-        SET verified_at = now()
-        WHERE id = $1
-      `;
-      await this.databaseService.query(query, [verification.id]);
-    })();
+    await this.verificationRepository.updateOneBy('id', verification.id, {
+      verified_at: new Date().toISOString(),
+    });
 
     return verification.value;
   }

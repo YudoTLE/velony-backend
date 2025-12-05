@@ -1,6 +1,5 @@
 import {
   ValidationPipe,
-  BadRequestException,
   HttpException,
   ArgumentsHost,
   Catch,
@@ -11,6 +10,7 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
+import { BadValidationRequest } from './exceptions/bad-validation-request.excpetion';
 
 @Catch()
 class GlobalExceptionHandler implements ExceptionFilter {
@@ -56,24 +56,21 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
       stopAtFirstError: false,
       exceptionFactory: (errors) => {
-        const formatted: Record<string, string[]> = {};
+        const dfs = (nodes) => {
+          return nodes.map((node) => {
+            return {
+              field: node.property,
+              ...(node.constraints
+                ? { messages: Object.values(node.constraints) }
+                : {}),
+              ...(node.children && node.children.length > 0
+                ? { children: dfs(node.children) }
+                : {}),
+            };
+          });
+        };
 
-        for (const err of errors) {
-          const messages = Object.values(err.constraints ?? {});
-
-          if (!formatted[err.property]) {
-            formatted[err.property] = [];
-          }
-
-          formatted[err.property].push(...messages);
-        }
-
-        return new BadRequestException({
-          statusCode: 400,
-          message: 'Validation error',
-          error: 'Bad Request',
-          errors: formatted,
-        });
+        return new BadValidationRequest(dfs(errors));
       },
     }),
   );

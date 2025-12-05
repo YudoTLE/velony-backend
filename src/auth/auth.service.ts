@@ -1,13 +1,12 @@
-import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { EnvironmentVariables } from 'src/config/env.config';
-import { DatabaseService } from 'src/database/database.service';
+import { InvalidCredentialsException } from 'src/exceptions/invalid-credentials.exception';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { UsernameAlreadyExistsException } from 'src/exceptions/username-already-exists.exception';
+import { UsersRepository } from 'src/users/users.repository';
 import { convertTime } from 'src/utlis/time';
 
 import { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -15,9 +14,9 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
-    private databaseService: DatabaseService,
-    private configService: ConfigService<EnvironmentVariables>,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService<EnvironmentVariables>,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   async signUpUserWithLocalStrategy(
@@ -29,20 +28,18 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     try {
-      const query = `
-        INSERT INTO users (name, username, password_hash)
-        VALUES ($1, $2, $3)
-        RETURNING uuid
-      `;
-      const values = [name, username, passwordHash];
-      const result = await this.databaseService.query(query, values);
+      const newUserUuid = await this.usersRepository
+        .createOne(
+          { name, username, password_hash: passwordHash },
+          { fields: ['uuid'] },
+        )
+        .then((u) => u.uuid);
 
-      const user = result.rows[0];
-      return this.generateTokens(user.uuid);
+      return this.generateTokens(newUserUuid);
     } catch (error) {
       if (error.code === '23505') {
         if (error.constraint?.includes('username')) {
-          throw new ConflictException('Username already exists');
+          throw new UsernameAlreadyExistsException();
         }
       }
       throw error;
@@ -53,21 +50,16 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<JwtPayload> {
-    const query = `
-      SELECT uuid, password_hash 
-      FROM users 
-      WHERE username = $1
-    `;
-    const result = await this.databaseService.query(query, [username]);
-    const user = result.rows[0];
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    const user = await this.usersRepository.findOneBy('username', username, {
+      fields: ['uuid', 'password_hash'],
+    });
+    if (!user || !user.password_hash) {
+      throw new InvalidCredentialsException();
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new InvalidCredentialsException();
     }
 
     return this.generateTokens(user.uuid);
@@ -77,17 +69,14 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify(refreshToken);
 
-      const query = `SELECT uuid FROM users WHERE uuid = $1`;
-      const result = await this.databaseService.query(query, [payload.sub]);
-      const user = result.rows[0];
+      const user = await this.usersRepository.findOneBy('uuid', payload.sub, {
+        fields: ['id'],
+      });
+      if (!user) throw new InvalidTokenException();
 
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      return this.generateTokens(user.uuid);
+      return this.generateTokens(payload.sub);
     } catch (_error) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new InvalidTokenException();
     }
   }
 
