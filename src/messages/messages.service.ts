@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConversationsRepository } from 'src/conversations/conversations.repository';
-import { ConversationNotFoundException } from 'src/exceptions/conversation-not-found.excpetion';
-import { MessageNotFoundException } from 'src/exceptions/message-not-found.excpetion';
+import { ConversationNotFoundException } from 'src/common/exceptions/conversation-not-found.excpetion';
+import { MessageNotFoundException } from 'src/common/exceptions/message-not-found.excpetion';
 import { UserConversationsRepository } from 'src/user-conversations/user-conversations.repository';
 import { UsersRepository } from 'src/users/users.repository';
 

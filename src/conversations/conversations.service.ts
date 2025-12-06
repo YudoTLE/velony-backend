@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { ConversationNotFoundException } from 'src/exceptions/conversation-not-found.excpetion';
+import { ConversationNotFoundException } from 'src/common/exceptions/conversation-not-found.excpetion';
 import { UserConversationsRepository } from 'src/user-conversations/user-conversations.repository';
 import { UsersRepository } from 'src/users/users.repository';
 

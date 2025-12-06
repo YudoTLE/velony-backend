@@ -10,7 +10,7 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
-import { BadValidationRequest } from './exceptions/bad-validation-request.excpetion';
+import { BadValidationRequest } from './common/exceptions/bad-validation-request.excpetion';
 
 @Catch()
 class GlobalExceptionHandler implements ExceptionFilter {

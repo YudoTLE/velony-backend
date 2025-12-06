@@ -2,10 +2,10 @@ import crypto from 'crypto';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserNotFoundException } from 'src/exceptions/user-not-found.excpetion';
-import { VerificationCodeInvalidException } from 'src/exceptions/verification-code-invalid.exception';
-import { VerificationExpiredException } from 'src/exceptions/verification-expired.exception';
-import { VerificationNotFoundException } from 'src/exceptions/verification-not-found.exception';
+import { UserNotFoundException } from 'src/common/exceptions/user-not-found.excpetion';
+import { VerificationCodeInvalidException } from 'src/common/exceptions/verification-code-invalid.exception';
+import { VerificationExpiredException } from 'src/common/exceptions/verification-expired.exception';
+import { VerificationNotFoundException } from 'src/common/exceptions/verification-not-found.exception';
 import { MailService } from 'src/mail/mail.service';
 import { UsersRepository } from 'src/users/users.repository';
 import { convertTime } from 'src/utlis/time';

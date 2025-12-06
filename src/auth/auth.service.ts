@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { EnvironmentVariables } from 'src/config/env.config';
-import { InvalidCredentialsException } from 'src/exceptions/invalid-credentials.exception';
-import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
-import { UsernameAlreadyExistsException } from 'src/exceptions/username-already-exists.exception';
+import { InvalidCredentialsException } from 'src/common/exceptions/invalid-credentials.exception';
+import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
+import { UsernameAlreadyExistsException } from 'src/common/exceptions/username-already-exists.exception';
 import { UsersRepository } from 'src/users/users.repository';
 import { convertTime } from 'src/utlis/time';
 
