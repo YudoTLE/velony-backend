@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { ConversationsRepository } from 'src/conversations/conversations.repository';
 import { ConversationNotFoundException } from 'src/common/exceptions/conversation-not-found.excpetion';
 import { UserNotFoundException } from 'src/common/exceptions/user-not-found.excpetion';
+import { ConversationsRepository } from 'src/conversations/conversations.repository';
 import { StorageService } from 'src/storage/storage.service';
 import { UserConversationsRepository } from 'src/user-conversations/user-conversations.repository';
 
