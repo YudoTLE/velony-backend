@@ -1,6 +1,7 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 
 import { ConversationDataResponseDto } from './conversation-data-response.dto';
+import { ConversationMetadataResponseDto } from './conversation-metadata-response.dto';
 
 @Exclude()
 export class ConversationResponseDto {
@@ -20,9 +21,11 @@ export class ConversationResponseDto {
   @Type(() => ConversationDataResponseDto)
   readonly data: ConversationDataResponseDto;
 
-  @Expose({ name: 'created_at' })
-  readonly createdAt: Date;
-
-  @Expose({ name: 'updated_at' })
-  readonly updatedAt: Date;
+  @Expose()
+  @Transform(({ obj }) => ({
+    created_at: obj.created_at,
+    updated_at: obj.updated_at,
+  }))
+  @Type(() => ConversationMetadataResponseDto)
+  readonly metadata: ConversationMetadataResponseDto;
 }
