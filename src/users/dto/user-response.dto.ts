@@ -1,6 +1,7 @@
 import { Exclude, Expose, Type, Transform } from 'class-transformer';
 
 import { UserDataResponseDto } from './user-data-response.dto';
+import { UserMetadataResponseDto } from './user-metadata-response.dto';
 
 @Exclude()
 export class UserResponseDto {
@@ -16,10 +17,16 @@ export class UserResponseDto {
           email: obj.email,
           phone_number: obj.phone_number,
           avatar_url: obj.avatar_url,
-          created_at: obj.created_at,
         }
       : null,
   )
   @Type(() => UserDataResponseDto)
   readonly data: UserDataResponseDto | null;
+
+  @Expose()
+  @Transform(({ obj }) => ({
+    created_at: obj.created_at,
+  }))
+  @Type(() => UserMetadataResponseDto)
+  readonly metadata: UserMetadataResponseDto;
 }
