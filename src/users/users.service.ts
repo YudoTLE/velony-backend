@@ -28,6 +28,7 @@ export class UsersService {
         'email',
         'phone_number',
         'avatar_url',
+        'created_at',
       ],
       deleted: false,
     });
