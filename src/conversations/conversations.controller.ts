@@ -4,11 +4,11 @@ import {
   Param,
   ParseUUIDPipe,
   Query,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { JwtCookieAuthGuard } from 'src/auth/guards/jwt-cookie-auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
 import { GetDirtyMessagesQueryDto } from 'src/messages/dto/get-dirty-messages-query.dto';
 import { GetDirtyMessagesResponseDto } from 'src/messages/dto/get-dirty-messages-response.dto';
 import { GetOlderMessagesQueryDto } from 'src/messages/dto/get-older-messages-query.dto';
@@ -34,13 +34,13 @@ export class ConversationsController {
 
   @Get('dirty')
   async findAllDirty(
-    @Request() request,
+    @User('sub') sub: string,
     @Query() query: GetDirtyConversationsQueryDto,
   ) {
     return plainToInstance(
       GetDirtyConversationsResponseDto,
       await this.conversationsService.findAllDirtyAfterCursorByUserId(
-        request.user.sub,
+        sub,
         query,
       ),
     );
@@ -48,18 +48,18 @@ export class ConversationsController {
 
   @Get(':uuid')
   async findOne(
-    @Request() request,
+    @User('sub') sub: string,
     @Param('uuid', ParseUUIDPipe) uuid: string,
   ) {
     return plainToInstance(
       GetConversationResponseDto,
-      await this.conversationsService.findOneByUuid(uuid, request.user.sub),
+      await this.conversationsService.findOneByUuid(uuid, sub),
     );
   }
 
   @Get(':uuid/messages/older')
   async findAllOlderMessages(
-    @Request() request,
+    @User('sub') sub: string,
     @Param('uuid', ParseUUIDPipe) uuid: string,
     @Query() query: GetOlderMessagesQueryDto,
   ) {
@@ -67,7 +67,7 @@ export class ConversationsController {
       GetOlderMessagesResponseDto,
       await this.messagesService.findAllBeforeCursorByConversationUuid(
         uuid,
-        request.user.sub,
+        sub,
         query,
       ),
     );
@@ -75,7 +75,7 @@ export class ConversationsController {
 
   @Get(':uuid/messages/dirty')
   async findAllDirtyMessages(
-    @Request() request,
+    @User('sub') sub: string,
     @Param('uuid', ParseUUIDPipe) uuid: string,
     @Query() query: GetDirtyMessagesQueryDto,
   ) {
@@ -83,7 +83,7 @@ export class ConversationsController {
       GetDirtyMessagesResponseDto,
       await this.messagesService.findAllDirtyAfterCursorByConversationUuid(
         uuid,
-        request.user.sub,
+        sub,
         query,
       ),
     );
@@ -91,7 +91,7 @@ export class ConversationsController {
 
   @Get(':uuid/users/dirty')
   async findAllDirtyUsers(
-    @Request() request,
+    @User('sub') sub: string,
     @Param('uuid', ParseUUIDPipe) uuid: string,
     @Query() query: GetDirtyUsersQueryDto,
   ) {
@@ -99,7 +99,7 @@ export class ConversationsController {
       GetDirtyUsersResponseDto,
       await this.usersService.findAllDirtyAfterCursorByConversationUuid(
         uuid,
-        request.user.sub,
+        sub,
         query,
       ),
     );

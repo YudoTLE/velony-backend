@@ -6,7 +6,6 @@ import {
   Put,
   Param,
   ParseUUIDPipe,
-  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -14,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { JwtCookieAuthGuard } from 'src/auth/guards/jwt-cookie-auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
 import { VerificationService } from 'src/verification/verification.service';
 
 import { GetUserResponseDto } from './dto/get-user-response.dto';
@@ -37,8 +37,8 @@ export class UsersController {
   ) {}
 
   @Get('me')
-  async findMe(@Request() request) {
-    const user = await this.usersService.findOneByUuid(request.user.sub);
+  async findMe(@User('sub') sub: string) {
+    const user = await this.usersService.findOneByUuid(sub);
     return plainToInstance(GetUserResponseDto, user);
   }
 
@@ -50,64 +50,58 @@ export class UsersController {
 
   @Put('me/username')
   async updateUsername(
-    @Request() request,
+    @User('sub') sub: string,
     @Body() dto: UpdateUserUsernameRequestDto,
   ) {
-    const username = await this.usersService.updateUsername(
-      request.user.sub,
-      dto.username,
-    );
+    const username = await this.usersService.updateUsername(sub, dto.username);
     return plainToInstance(UpdateUserUsernameResponseDto, { username });
   }
 
   @Put('me/name')
-  async updateName(@Request() request, @Body() dto: UpdateUserNameRequestDto) {
-    const name = await this.usersService.updateName(request.user.sub, dto.name);
+  async updateName(
+    @User('sub') sub: string,
+    @Body() dto: UpdateUserNameRequestDto,
+  ) {
+    const name = await this.usersService.updateName(sub, dto.name);
     return plainToInstance(UpdateUserNameResponseDto, { name });
   }
 
   @Post('me/email/start')
   async updateEmailMeStart(
-    @Request() request,
+    @User('sub') sub: string,
     @Body() dto: UpdateUserEmailStartRequestDto,
   ) {
-    await this.verificationService.issueEmailChange(
-      request.user.sub,
-      dto.email,
-    );
+    await this.verificationService.issueEmailChange(sub, dto.email);
   }
 
   @Post('me/email/confirm')
   async updateEmailMeConfirm(
-    @Request() request,
+    @User('sub') sub: string,
     @Body() dto: UpdateUserEmailConfirmRequestDto,
   ) {
     const email = await this.verificationService.validateEmailChange(
-      request.user.sub,
+      sub,
       dto.otp,
     );
-    await this.usersService.updateEmail(request.user.sub, email);
+    await this.usersService.updateEmail(sub, email);
     return plainToInstance(UpdateUserEmailConfirmResponseDto, { email });
   }
 
   @Put('me/password')
   async updatePasswordMe(
-    @Request() request,
+    @User('sub') sub: string,
     @Body() dto: UpdateUserPasswordRequestDto,
   ) {
-    await this.usersService.updatePassword(request.user.sub, dto);
+    await this.usersService.updatePassword(sub, dto);
   }
 
   @Put('me/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
   async updateAvatarMe(
-    @Request() request,
+    @User('sub') sub: string,
     @UploadedFile() avatar: Express.Multer.File,
   ) {
-    const avatarUrl = await this.usersService.updateAvatar(
-      request.user.sub,
-      avatar.buffer,
-    );
+    const avatarUrl = await this.usersService.updateAvatar(sub, avatar.buffer);
     return plainToInstance(UpdateUserAvatarResponseDto, { avatarUrl });
   }
 }
