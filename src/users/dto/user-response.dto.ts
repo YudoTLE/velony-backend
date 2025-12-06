@@ -1,4 +1,5 @@
-import { Exclude, Expose, Type, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform, plainToInstance } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
 
 import { UserDataResponseDto } from './user-data-response.dto';
 import { UserMetadataResponseDto } from './user-metadata-response.dto';
@@ -9,24 +10,17 @@ export class UserResponseDto {
   readonly id: string;
 
   @Expose()
-  @Transform(({ obj }) =>
-    obj.deleted_at === null || obj.deleted_at === undefined
-      ? {
-          name: obj.name,
-          username: obj.username,
-          email: obj.email,
-          phone_number: obj.phone_number,
-          avatar_url: obj.avatar_url,
-        }
-      : null,
-  )
-  @Type(() => UserDataResponseDto)
+  @Transform(({ obj }) => {
+    if (obj.deleted_at !== null && obj.deleted_at !== undefined) {
+      return null;
+    }
+    return plainToInstance(UserDataResponseDto, obj);
+  })
+  @ValidateNested()
   readonly data: UserDataResponseDto | null;
 
   @Expose()
-  @Transform(({ obj }) => ({
-    created_at: obj.created_at,
-  }))
-  @Type(() => UserMetadataResponseDto)
+  @Transform(({ obj }) => plainToInstance(UserMetadataResponseDto, obj))
+  @ValidateNested()
   readonly metadata: UserMetadataResponseDto;
 }

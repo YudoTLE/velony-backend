@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, plainToInstance } from 'class-transformer';
 
 import { ConversationDataResponseDto } from './conversation-data-response.dto';
 import { ConversationMetadataResponseDto } from './conversation-metadata-response.dto';
@@ -9,23 +9,15 @@ export class ConversationResponseDto {
   readonly id: string;
 
   @Expose()
-  @Transform(({ obj }) =>
-    obj.deleted_at === null || obj.deleted_at === undefined
-      ? {
-          title: obj.title,
-          description: obj.description,
-          thumbnail_url: obj.thumbnail_url,
-        }
-      : null,
-  )
-  @Type(() => ConversationDataResponseDto)
+  @Transform(({ obj }) => {
+    if (obj.deleted_at !== null && obj.deleted_at !== undefined) {
+      return null;
+    }
+    return plainToInstance(ConversationDataResponseDto, obj);
+  })
   readonly data: ConversationDataResponseDto;
 
   @Expose()
-  @Transform(({ obj }) => ({
-    created_at: obj.created_at,
-    updated_at: obj.updated_at,
-  }))
-  @Type(() => ConversationMetadataResponseDto)
+  @Transform(({ obj }) => plainToInstance(ConversationMetadataResponseDto, obj))
   readonly metadata: ConversationMetadataResponseDto;
 }
