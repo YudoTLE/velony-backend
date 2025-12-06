@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { EnvironmentVariables } from 'src/config/env.config';
 import { InvalidCredentialsException } from 'src/common/exceptions/invalid-credentials.exception';
 import { InvalidTokenException } from 'src/common/exceptions/invalid-token.exception';
 import { UsernameAlreadyExistsException } from 'src/common/exceptions/username-already-exists.exception';
+import { EnvironmentVariables } from 'src/config/env.config';
 import { UsersRepository } from 'src/users/users.repository';
 import { convertTime } from 'src/utlis/time';
 
@@ -66,18 +66,14 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string): Promise<JwtPayload> {
-    try {
-      const payload = this.jwtService.verify(refreshToken);
+    const payload = this.jwtService.verify(refreshToken);
 
-      const user = await this.usersRepository.findOneBy('uuid', payload.sub, {
-        fields: ['id'],
-      });
-      if (!user) throw new InvalidTokenException();
+    const user = await this.usersRepository.findOneBy('uuid', payload.sub, {
+      fields: ['id'],
+    });
+    if (!user) throw new InvalidTokenException();
 
-      return this.generateTokens(payload.sub);
-    } catch (_error) {
-      throw new InvalidTokenException();
-    }
+    return this.generateTokens(payload.sub);
   }
 
   private async generateTokens(userId: string): Promise<JwtPayload> {
