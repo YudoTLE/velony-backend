@@ -1,6 +1,7 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 
 import { MessageDataResponseDto } from './message-data-response.dto';
+import { MessageMetadataResponseDto } from './message-metadata-response.dto';
 
 @Exclude()
 export class MessageResponseDto {
@@ -27,15 +28,12 @@ export class MessageResponseDto {
   @Type(() => MessageDataResponseDto)
   readonly data: MessageDataResponseDto | null;
 
-  @Expose({ name: 'created_at' })
-  readonly createdAt: Date;
-
-  @Expose({ name: 'updated_at' })
-  readonly updatedAt: Date;
-
-  @Expose({ name: 'deleted_at' })
-  readonly deletedAt: Date | null;
-
-  @Expose({ name: 'is_self' })
-  readonly isSelf: boolean;
+  @Expose()
+  @Transform(({ obj }) => ({
+    created_at: obj.created_at,
+    updated_at: obj.updated_at,
+    is_self: obj.is_self,
+  }))
+  @Type(() => MessageMetadataResponseDto)
+  readonly metadata: MessageMetadataResponseDto;
 }
