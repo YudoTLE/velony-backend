@@ -4,7 +4,7 @@ export type MessageTable = {
   previous_id: number | null;
   user_id: number;
   conversation_id: number;
-  content: string | null;
+  content: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
