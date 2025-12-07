@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { ParamsBuilder } from 'src/database/params-builder';
 
 import { type UserTable } from './types/user-table';
 
@@ -39,30 +40,26 @@ export class UsersRepository {
     conversationId: number,
     options?: {
       cursor?: {
-        userId: number;
-        updatedAt: Date;
+        version: string;
       };
       limit?: number;
       fields?: T[];
     },
   ) {
-    const params: unknown[] = [conversationId];
-    let paramIndex = 2;
+    const builder = new ParamsBuilder([conversationId]);
 
-    let cursorCondition = '';
-    if (options?.cursor !== undefined) {
-      cursorCondition = `
-        AND (u.updated_at, u.id) > ($${paramIndex++}, $${paramIndex++})
-      `;
-      params.push(options.cursor.updatedAt);
-      params.push(options.cursor.userId);
-    }
+    const cursorCondition = options?.cursor
+      ? `
+          AND u.version > ${options.cursor.version}
+        `
+      : '';
+    const limitClause = options?.limit
+      ? `
+          LIMIT ${options.limit}
+        `
+      : '';
 
-    let limitClause = '';
-    if (options?.limit != undefined) {
-      limitClause = `LIMIT $${paramIndex++}`;
-      params.push(options.limit);
-    }
+    const params = builder.getParams();
 
     if (!options?.fields?.length) {
       const query = `
@@ -72,7 +69,7 @@ export class UsersRepository {
           ON u.id = uc.user_id
         WHERE uc.conversation_id = $1
           ${cursorCondition}
-        ORDER BY u.updated_at, u.id
+        ORDER BY u.version
         ${limitClause}
       `;
 
@@ -97,7 +94,7 @@ export class UsersRepository {
         ON u.id = uc.user_id
       WHERE uc.conversation_id = $1
         ${cursorCondition}
-      ORDER BY u.updated_at, u.id
+      ORDER BY u.version
       ${limitClause}
     `;
 

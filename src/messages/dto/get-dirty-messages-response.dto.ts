@@ -13,6 +13,9 @@ class GetDirtyMessagesDependenciesResponseDto {
 @Exclude()
 export class GetDirtyMessagesResponseDto {
   @Expose()
+  readonly version?: string;
+
+  @Expose()
   @Type(() => MessageResponseDto)
   readonly messages: MessageResponseDto[];
 

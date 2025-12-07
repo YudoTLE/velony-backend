@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
 import { ConversationNotFoundException } from 'src/common/exceptions/conversation-not-found.excpetion';
+import { DatabaseService } from 'src/database/database.service';
 import { UserConversationsRepository } from 'src/user-conversations/user-conversations.repository';
 import { UsersRepository } from 'src/users/users.repository';
 
@@ -52,32 +52,16 @@ export class ConversationsService {
     requesterUuid: string,
     options: GetDirtyConversationsQueryDto,
   ) {
-    const [requesterId, cursorConversation] = await Promise.all([
-      this.usersRepository
-        .findOneBy('uuid', requesterUuid, { fields: ['id'] })
-        .then((u) => u?.id),
-      options.cursor
-        ? this.conversationsRepository.findOneBy(
-            'uuid',
-            options.cursor.conversationId,
-            {
-              fields: ['id'],
-            },
-          )
-        : Promise.resolve(undefined),
-    ]);
+    const requesterId = await this.usersRepository
+      .findOneBy('uuid', requesterUuid, { fields: ['id'] })
+      .then((u) => u?.id);
     if (!requesterId) throw new ConversationNotFoundException();
 
     const conversations =
       await this.conversationsRepository.findAllDirtyAfterCursorByUserId(
         requesterId,
         {
-          cursor: options.cursor
-            ? {
-                conversationId: cursorConversation!.id,
-                updatedAt: options.cursor.updatedAt,
-              }
-            : undefined,
+          cursor: options.cursor,
           limit: options.limit,
           fields: [
             'uuid',
@@ -87,11 +71,18 @@ export class ConversationsService {
             'created_at',
             'updated_at',
             'deleted_at',
+
+            'version',
           ],
         },
       );
 
-    return { conversations };
+    const version = conversations.at(-1)?.version;
+
+    return {
+      ...(version !== undefined && { version }),
+      conversations,
+    };
   }
 
   async createOne(requesterUuid: string, dto: CreateConversationRequestDto) {

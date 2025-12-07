@@ -42,49 +42,34 @@ export class UsersService {
     requesterUuid: string,
     options: GetDirtyUsersQueryDto,
   ) {
-    const [conversationId, requesterId, cursorUserId] = await Promise.all([
+    const [conversationId, requesterId] = await Promise.all([
       this.conversationsRepository
         .findOneBy('uuid', conversationUuid, { fields: ['id'] })
-        .then((c) => c?.id),
+        .then((c) => {
+          if (!c) throw new ConversationNotFoundException();
+          return c.id;
+        }),
       this.usersRepository
         .findOneBy('uuid', requesterUuid, { fields: ['id'] })
-        .then((u) => u?.id),
-      options.cursor
-        ? this.usersRepository
-            .findOneBy('uuid', options.cursor.userId, { fields: ['id'] })
-            .then((u) => u?.id)
-        : Promise.resolve(undefined),
+        .then((u) => {
+          if (!u) throw new ConversationNotFoundException();
+          return u.id;
+        }),
     ]);
-    if (!conversationId || !requesterId)
-      throw new ConversationNotFoundException();
 
-    const [isAuthorized, isCursorUserBelongToConversation] = await Promise.all([
-      this.userConversationsRepository
-        .findOne({
-          userId: requesterId,
-          conversationId,
-        })
-        .then((uc) => Boolean(uc)),
-      options.cursor
-        ? this.userConversationsRepository
-            .findOne({ userId: cursorUserId!, conversationId })
-            .then((uc) => Boolean(uc))
-        : Promise.resolve(true),
-    ]);
+    const isAuthorized = await this.userConversationsRepository
+      .findOne({
+        userId: requesterId,
+        conversationId,
+      })
+      .then((uc) => Boolean(uc));
     if (!isAuthorized) throw new ConversationNotFoundException();
-
-    if (!isCursorUserBelongToConversation) throw new UserNotFoundException();
 
     const users =
       await this.usersRepository.findAllDirtyAfterCursorByConversationId(
         conversationId,
         {
-          cursor: options.cursor
-            ? {
-                userId: cursorUserId!,
-                updatedAt: options.cursor.updatedAt,
-              }
-            : undefined,
+          cursor: options.cursor,
           limit: options.limit,
           fields: [
             'uuid',
@@ -96,11 +81,17 @@ export class UsersService {
             'created_at',
 
             'deleted_at',
+            'version',
           ],
         },
       );
 
-    return { users };
+    const version = users.at(-1)?.version;
+
+    return {
+      ...(version !== undefined && { version }),
+      users,
+    };
   }
 
   async updateUsername(userUuid: string, newUsername: string): Promise<string> {

@@ -31,7 +31,7 @@ export class MessagesService {
     requesterUuid: string,
     options: GetDirtyMessagesQueryDto,
   ) {
-    const [requesterId, conversationId, cursorMessage, cursorOldestMessage] =
+    const [requesterId, conversationId, cursorOldestMessage] =
       await Promise.all([
         this.usersRepository
           .findOneBy('uuid', requesterUuid, { fields: ['id'] })
@@ -39,15 +39,6 @@ export class MessagesService {
         this.conversationsRepository
           .findOneBy('uuid', conversationUuid, { fields: ['id'] })
           .then((c) => c?.id),
-        options.cursor
-          ? this.messagesRepository.findOneBy(
-              'uuid',
-              options.cursor.messageId,
-              {
-                fields: ['id', 'conversation_id'],
-              },
-            )
-          : Promise.resolve(undefined),
         options.cursor
           ? this.messagesRepository.findOneBy(
               'uuid',
@@ -69,8 +60,7 @@ export class MessagesService {
 
     if (
       options.cursor &&
-      (cursorMessage?.conversation_id !== conversationId ||
-        cursorOldestMessage?.conversation_id !== conversationId)
+      cursorOldestMessage?.conversation_id !== conversationId
     )
       throw new MessageNotFoundException();
 
@@ -78,8 +68,7 @@ export class MessagesService {
       .findAllDirtyAfterCursorByConversationId(conversationId, {
         cursor: options.cursor
           ? {
-              messageId: cursorMessage!.id,
-              updatedAt: options.cursor.updatedAt,
+              version: options.cursor.version,
               oldestMessageId: cursorOldestMessage!.id,
             }
           : undefined,
@@ -95,6 +84,7 @@ export class MessagesService {
 
           'deleted_at',
           'user_id',
+          'version',
         ],
       })
       .then((list) =>
@@ -121,7 +111,10 @@ export class MessagesService {
       },
     );
 
+    const version = messages.at(-1)?.version;
+
     return {
+      ...(version !== undefined && { version }),
       messages,
       dependencies: { users },
     };

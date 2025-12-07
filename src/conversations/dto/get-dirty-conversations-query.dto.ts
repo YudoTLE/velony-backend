@@ -1,33 +1,26 @@
 import { BadRequestException } from '@nestjs/common';
-import { plainToInstance, Transform, Type } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
-  IsUUID,
   IsInt,
   Min,
   IsOptional,
   Max,
   ValidateNested,
-  IsDate,
+  IsString,
 } from 'class-validator';
 
-class CursorDto {
-  @Transform(({ value }) => new Date(value))
-  @IsDate({
-    message: () => `Updated at must be a date`,
+class CursorResponseDto {
+  @IsString({
+    message: () => `Version must be a string`,
   })
-  updatedAt: Date;
-  @IsUUID('7', {
-    message: ({ constraints }) =>
-      `Conversation ID must be a UUID v${constraints}`,
-  })
-  conversationId: string;
+  version: string;
 }
 
 export class GetDirtyConversationsQueryDto {
   @Transform(({ value }) => {
     try {
       return plainToInstance(
-        CursorDto,
+        CursorResponseDto,
         JSON.parse(Buffer.from(value, 'base64').toString()),
       );
     } catch {
@@ -38,8 +31,7 @@ export class GetDirtyConversationsQueryDto {
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => CursorDto)
-  cursor?: CursorDto;
+  cursor?: CursorResponseDto;
 
   @IsOptional()
   @IsInt({ message: () => 'Limit must be an integer' })

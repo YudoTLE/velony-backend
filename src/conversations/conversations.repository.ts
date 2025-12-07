@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { ParamsBuilder } from 'src/database/params-builder';
 import { type UserTable } from 'src/users/types/user-table';
 
 import { type ConversationTable } from './types/conversation-table';
@@ -14,25 +15,24 @@ export class ConversationsRepository {
     userId: UserTable['id'],
     options?: {
       fields?: T[];
-      cursor?: { updatedAt: Date; conversationId: number };
+      cursor?: { version: string };
       limit?: number;
     },
   ) {
-    const params: unknown[] = [userId];
-    let paramIndex = 2;
+    const builder = new ParamsBuilder([userId]);
 
-    let cursorCondition = '';
-    if (options?.cursor !== undefined) {
-      cursorCondition = `AND (c.updated_at, c.id) > ($${paramIndex++}, $${paramIndex++})`;
-      params.push(options.cursor.updatedAt);
-      params.push(options.cursor.conversationId);
-    }
+    const cursorCondition = options?.cursor
+      ? `
+          AND c.version > ${builder.push(options.cursor.version)}
+        `
+      : '';
+    const limitClause = options?.limit
+      ? `
+          LIMIT ${builder.push(options.limit)}
+        `
+      : '';
 
-    let limitClause = '';
-    if (options?.limit != undefined) {
-      limitClause = `LIMIT $${paramIndex++}`;
-      params.push(options.limit);
-    }
+    const params = builder.getParams();
 
     if (!options?.fields?.length) {
       const query = `
@@ -42,6 +42,7 @@ export class ConversationsRepository {
           ON c.id = uc.conversation_id
         WHERE uc.user_id = $1
           ${cursorCondition}
+        ORDER BY version
         ${limitClause}
       `;
 
@@ -64,6 +65,7 @@ export class ConversationsRepository {
         ON c.id = uc.conversation_id
       WHERE uc.user_id = $1
         ${cursorCondition}
+      ORDER BY version
       ${limitClause}
     `;
 

@@ -1,25 +1,19 @@
 import { BadRequestException } from '@nestjs/common';
-import { plainToInstance, Transform, Type } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
-  IsUUID,
   IsInt,
   Min,
   IsOptional,
   Max,
   ValidateNested,
-  IsDate,
+  IsString,
 } from 'class-validator';
 
 class CursorResponseDto {
-  @Transform(({ value }) => new Date(value))
-  @IsDate({
-    message: () => `Updated at must be a date`,
+  @IsString({
+    message: () => `Version must be a string`,
   })
-  updatedAt: Date;
-  @IsUUID('4', {
-    message: ({ constraints }) => `Message ID must be a UUID v${constraints}`,
-  })
-  userId: string;
+  version: string;
 }
 
 export class GetDirtyUsersQueryDto {
@@ -37,7 +31,6 @@ export class GetDirtyUsersQueryDto {
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => CursorResponseDto)
   cursor?: CursorResponseDto;
 
   @IsOptional()

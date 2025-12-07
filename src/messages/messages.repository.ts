@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { ParamsBuilder } from 'src/database/params-builder';
 
 import { type MessageTable } from './types/message-table';
 
@@ -13,33 +14,28 @@ export class MessagesRepository {
     conversationId: number,
     options?: {
       cursor?: {
-        updatedAt: Date;
-        messageId: number;
+        version: string;
         oldestMessageId: number | null;
       };
       limit?: number;
       fields?: T[];
     },
   ) {
-    const params: unknown[] = [conversationId];
-    let paramIndex = 2;
+    const builder = new ParamsBuilder([conversationId]);
 
-    let cursorCondition = '';
-    if (options?.cursor !== undefined) {
-      cursorCondition = `
-        AND id >= $${paramIndex++}
-        AND (updated_at, id) > ($${paramIndex++}, $${paramIndex++})
-        `;
-      params.push(options.cursor.oldestMessageId);
-      params.push(options.cursor.updatedAt);
-      params.push(options.cursor.messageId);
-    }
+    const cursorCondition = options?.cursor
+      ? `
+          AND version > ${builder.push(options.cursor.version)}
+          AND id >= ${builder.push(options.cursor.oldestMessageId)}
+        `
+      : '';
+    const limitClause = options?.limit
+      ? `
+          LIMIT ${builder.push(options.limit)}
+        `
+      : '';
 
-    let limitClause = '';
-    if (options?.limit != undefined) {
-      limitClause = `LIMIT $${paramIndex++}`;
-      params.push(options.limit);
-    }
+    const params = builder.getParams();
 
     if (!options?.fields?.length) {
       const query = `
@@ -47,7 +43,7 @@ export class MessagesRepository {
         FROM messages
         WHERE conversation_id = $1
           ${cursorCondition}
-        ORDER BY updated_at, id
+        ORDER BY version
         ${limitClause}
       `;
 
@@ -68,7 +64,7 @@ export class MessagesRepository {
       FROM messages
       WHERE conversation_id = $1
         ${cursorCondition}
-      ORDER BY updated_at, id
+      ORDER BY version
       ${limitClause}
     `;
 
@@ -88,20 +84,20 @@ export class MessagesRepository {
       fields?: T[];
     },
   ) {
-    const params: unknown[] = [conversationId];
-    let paramIndex = 2;
+    const builder = new ParamsBuilder([conversationId]);
 
-    let cursorCondition = '';
-    if (options?.cursor != undefined) {
-      cursorCondition = `AND id < $${paramIndex++}`;
-      params.push(options.cursor.messageId);
-    }
+    const cursorCondition = options?.cursor
+      ? `
+          AND id < ${builder.push(options.cursor.messageId)}
+        `
+      : '';
+    const limitClause = options?.limit
+      ? `
+          LIMIT ${builder.push(options.limit)}
+        `
+      : '';
 
-    let limitClause = '';
-    if (options?.limit != undefined) {
-      limitClause = `LIMIT $${paramIndex++}`;
-      params.push(options.limit);
-    }
+    const params = builder.getParams();
 
     if (!options?.fields?.length) {
       const query = `

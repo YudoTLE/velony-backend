@@ -11,4 +11,5 @@ export type MessageTable = {
   previous_uuid: string | null;
   user_uuid: string;
   conversation_uuid: string;
+  version: string;
 };
