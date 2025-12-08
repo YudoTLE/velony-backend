@@ -1,8 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { ConversationCreatedResponseDto } from './conversation-created-response.dto';
-import { ConversationDeletedResponseDto } from './conversation-deleted-response.dto';
-import { ConversationUpdatedResponseDto } from './conversation-updated-response.dto';
+import { ConversationActiveResponseDto } from './conversation-active-response.dto';
+import { ConversationInactiveResponseDto } from './conversation-inactive-response.dto';
 
 @Exclude()
 class CategorizedConversationsResponseDto {
@@ -10,23 +9,16 @@ class CategorizedConversationsResponseDto {
   readonly version?: number;
 
   @Expose()
-  @Type(() => ConversationCreatedResponseDto)
-  readonly created: ConversationCreatedResponseDto[];
+  @Type(() => ConversationActiveResponseDto)
+  readonly active: ConversationActiveResponseDto[];
 
   @Expose()
-  @Type(() => ConversationUpdatedResponseDto)
-  readonly updated: ConversationUpdatedResponseDto[];
-
-  @Expose()
-  @Type(() => ConversationDeletedResponseDto)
-  readonly deleted: ConversationDeletedResponseDto[];
+  @Type(() => ConversationInactiveResponseDto)
+  readonly inactive: ConversationInactiveResponseDto[];
 }
 
 @Exclude()
 export class GetDirtyConversationsResponseDto {
-  @Expose()
-  readonly version?: string;
-
   @Expose()
   @Type(() => CategorizedConversationsResponseDto)
   readonly conversations: CategorizedConversationsResponseDto[];
