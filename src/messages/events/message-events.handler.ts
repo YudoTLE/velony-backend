@@ -7,7 +7,9 @@ import { UsersRepository } from 'src/users/users.repository';
 import { MessageCreatedEvent } from './message-created.event';
 import { MessageDeletedEvent } from './message-deleted.event';
 import { MessageUpdatedEvent } from './message-updated.event';
-import { MessageResponseDto } from '../dto/message-response.dto';
+import { WsMessageCreatedResponseDto } from '../dto/ws-message-created-response.dto';
+import { WsMessageDeletedResponseDto } from '../dto/ws-message-deleted-response.dto';
+import { WsMessageUpdateResponseDto } from '../dto/ws-message-updated-response.dto';
 
 @Injectable()
 export class MessageEventsHandler {
@@ -25,13 +27,16 @@ export class MessageEventsHandler {
       .then((list) => list.map((u) => u.uuid));
 
     participantUuids.forEach((uuid) => {
-      this.realtimeGateway.server.to(uuid).emit('message.created', {
-        ...(event.optimisticId && { optimisticId: event.optimisticId }),
-        message: plainToInstance(MessageResponseDto, {
-          ...event.message,
-          is_self: uuid === event.message.user_uuid,
+      this.realtimeGateway.server.to(uuid).emit(
+        'message.created',
+        plainToInstance(WsMessageCreatedResponseDto, {
+          message: {
+            ...event.message,
+            is_self: uuid === event.message.user_uuid,
+          },
+          optimisticId: event.optimisticId,
         }),
-      });
+      );
     });
   }
 
@@ -44,12 +49,12 @@ export class MessageEventsHandler {
       .then((list) => list.map((u) => u.uuid));
 
     participantUuids.forEach((uuid) => {
-      this.realtimeGateway.server.to(uuid).emit('message.updated', {
-        message: plainToInstance(MessageResponseDto, {
-          ...event.message,
-          is_self: uuid === event.message.user_uuid,
-        }),
-      });
+      this.realtimeGateway.server
+        .to(uuid)
+        .emit(
+          'message.updated',
+          plainToInstance(WsMessageUpdateResponseDto, event),
+        );
     });
   }
 
@@ -62,12 +67,12 @@ export class MessageEventsHandler {
       .then((list) => list.map((u) => u.uuid));
 
     participantUuids.forEach((uuid) => {
-      this.realtimeGateway.server.to(uuid).emit('message.deleted', {
-        message: plainToInstance(MessageResponseDto, {
-          ...event.message,
-          is_self: uuid === event.message.user_uuid,
-        }),
-      });
+      this.realtimeGateway.server
+        .to(uuid)
+        .emit(
+          'message.deleted',
+          plainToInstance(WsMessageDeletedResponseDto, event),
+        );
     });
   }
 }
