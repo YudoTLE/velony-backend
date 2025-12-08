@@ -9,7 +9,7 @@ export class MessageResponseDto {
   readonly previousId: string | null;
 
   @Expose({ name: 'user_uuid' })
-  readonly userId: string | null;
+  readonly userId: string;
 
   @Expose({ name: 'conversation_uuid' })
   readonly conversationId: string;
