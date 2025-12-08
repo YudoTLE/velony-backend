@@ -90,18 +90,15 @@ export class UsersService {
     const categorized = users.reduce(
       (acc, u) => {
         if (u.deleted_at !== null) {
-          acc.deleted.push(u);
-        } else if (u.updated_at.getTime() !== u.created_at.getTime()) {
-          acc.updated.push(u);
+          acc.inactive.push(u);
         } else {
-          acc.created.push(u);
+          acc.active.push(u);
         }
         return acc;
       },
       {
-        created: [] as typeof users,
-        updated: [] as typeof users,
-        deleted: [] as typeof users,
+        active: [] as typeof users,
+        inactive: [] as typeof users,
       },
     );
     const version = users.at(-1)?.version;

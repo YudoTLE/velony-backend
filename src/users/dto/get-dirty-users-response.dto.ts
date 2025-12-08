@@ -1,8 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { UserCreatedResponseDto } from './user-created-response.dto';
-import { UserDeletedResponseDto } from './user-deleted-response.dto';
-import { UserUpdatedResponseDto } from './user-updated-response.dto';
+import { UserActiveResponseDto } from './user-active-response.dto';
+import { UserInactiveResponseDto } from './user-inactive-response.dto';
 
 @Exclude()
 class CategorizedUsersResponseDto {
@@ -10,16 +9,12 @@ class CategorizedUsersResponseDto {
   readonly version?: number;
 
   @Expose()
-  @Type(() => UserCreatedResponseDto)
-  readonly created: UserCreatedResponseDto[];
+  @Type(() => UserActiveResponseDto)
+  readonly active: UserActiveResponseDto[];
 
   @Expose()
-  @Type(() => UserUpdatedResponseDto)
-  readonly updated: UserUpdatedResponseDto[];
-
-  @Expose()
-  @Type(() => UserDeletedResponseDto)
-  readonly deleted: UserDeletedResponseDto[];
+  @Type(() => UserInactiveResponseDto)
+  readonly inactive: UserInactiveResponseDto[];
 }
 
 @Exclude()
