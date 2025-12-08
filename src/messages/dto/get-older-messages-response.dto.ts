@@ -1,18 +1,18 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { UserResponseDto } from 'src/users/dto/user-response.dto';
 
-import { MessageDeletedResponseDto } from './message-deleted-response.dto';
-import { MessageResponseDto } from './message-response.dto';
+import { MessageActiveResponseDto } from './message-active-response.dto';
+import { MessageInactiveResponseDto } from './message-inactive-response.dto';
 
 @Exclude()
 class CategorizedMessagesResponseDto {
   @Expose()
-  @Type(() => MessageResponseDto)
-  readonly active: MessageResponseDto[];
+  @Type(() => MessageActiveResponseDto)
+  readonly active: MessageActiveResponseDto[];
 
   @Expose()
-  @Type(() => MessageDeletedResponseDto)
-  readonly deleted: MessageDeletedResponseDto[];
+  @Type(() => MessageInactiveResponseDto)
+  readonly inactive: MessageInactiveResponseDto[];
 }
 
 @Exclude()

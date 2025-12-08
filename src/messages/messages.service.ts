@@ -114,18 +114,15 @@ export class MessagesService {
     const categorized = messages.reduce(
       (acc, m) => {
         if (m.deleted_at !== null) {
-          acc.deleted.push(m);
-        } else if (m.updated_at.getTime() !== m.created_at.getTime()) {
-          acc.updated.push(m);
+          acc.inactive.push(m);
         } else {
-          acc.created.push(m);
+          acc.active.push(m);
         }
         return acc;
       },
       {
-        created: [] as typeof messages,
-        updated: [] as typeof messages,
-        deleted: [] as typeof messages,
+        active: [] as typeof messages,
+        inactive: [] as typeof messages,
       },
     );
     const version = messages.at(-1)?.version;
@@ -213,7 +210,7 @@ export class MessagesService {
     const categorized = messages.reduce(
       (acc, m) => {
         if (m.deleted_at !== null) {
-          acc.deleted.push(m);
+          acc.inactive.push(m);
         } else {
           acc.active.push(m);
         }
@@ -221,7 +218,7 @@ export class MessagesService {
       },
       {
         active: [] as typeof messages,
-        deleted: [] as typeof messages,
+        inactive: [] as typeof messages,
       },
     );
 
