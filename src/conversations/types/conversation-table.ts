@@ -4,8 +4,8 @@ export type ConversationTable = {
   title: string;
   description: string;
   thumbnail_url: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
   version: string;
 };

@@ -1,7 +1,10 @@
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class ConversationDataResponseDto {
+export class ConversationUpdatedResponseDto {
+  @Expose({ name: 'uuid' })
+  readonly id: string;
+
   @Expose()
   readonly title: string;
 
@@ -10,4 +13,7 @@ export class ConversationDataResponseDto {
 
   @Expose({ name: 'thumbnail_url' })
   readonly thumbnailUrl: string | null;
+
+  @Expose({ name: 'updated_at' })
+  readonly updatedAt: Date;
 }

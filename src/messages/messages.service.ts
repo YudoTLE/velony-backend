@@ -111,11 +111,30 @@ export class MessagesService {
       },
     );
 
+    const categorized = messages.reduce(
+      (acc, m) => {
+        if (m.deleted_at !== null) {
+          acc.deleted.push(m);
+        } else if (m.updated_at.getTime() !== m.created_at.getTime()) {
+          acc.updated.push(m);
+        } else {
+          acc.created.push(m);
+        }
+        return acc;
+      },
+      {
+        created: [] as typeof messages,
+        updated: [] as typeof messages,
+        deleted: [] as typeof messages,
+      },
+    );
     const version = messages.at(-1)?.version;
 
     return {
-      ...(version !== undefined && { version }),
-      messages,
+      messages: {
+        ...(version !== undefined && { version }),
+        ...categorized,
+      },
       dependencies: { users },
     };
   }
@@ -162,22 +181,21 @@ export class MessagesService {
           'content',
           'created_at',
           'updated_at',
-          'deleted_at',
 
           'user_id',
+          'deleted_at',
         ],
       })
       .then((list) =>
         list.map((m) => ({
           ...m,
-          content: m.deleted_at === null ? m.content : 'Deleted message',
           is_self: m.user_uuid === requesterUuid,
         })),
       );
 
     const users = await this.usersRepository.findAllBy(
       'ids',
-      messages.map((m) => m.user_id),
+      Array.from(new Set(messages.map((m) => m.user_id))),
       {
         fields: [
           'uuid',
@@ -191,6 +209,26 @@ export class MessagesService {
         deleted: false,
       },
     );
+
+    const categorized = messages.reduce(
+      (acc, m) => {
+        if (m.deleted_at !== null) {
+          acc.deleted.push(m);
+        } else {
+          acc.active.push(m);
+        }
+        return acc;
+      },
+      {
+        active: [] as typeof messages,
+        deleted: [] as typeof messages,
+      },
+    );
+
+    return {
+      messages: categorized,
+      dependencies: { users },
+    };
 
     return { messages, dependencies: { users } };
   }

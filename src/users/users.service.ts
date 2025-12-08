@@ -80,17 +80,37 @@ export class UsersService {
             'avatar_url',
             'created_at',
 
+            'updated_at',
             'deleted_at',
             'version',
           ],
         },
       );
 
+    const categorized = users.reduce(
+      (acc, u) => {
+        if (u.deleted_at !== null) {
+          acc.deleted.push(u);
+        } else if (u.updated_at.getTime() !== u.created_at.getTime()) {
+          acc.updated.push(u);
+        } else {
+          acc.created.push(u);
+        }
+        return acc;
+      },
+      {
+        created: [] as typeof users,
+        updated: [] as typeof users,
+        deleted: [] as typeof users,
+      },
+    );
     const version = users.at(-1)?.version;
 
     return {
-      ...(version !== undefined && { version }),
-      users,
+      users: {
+        ...(version !== undefined && { version }),
+        ...categorized,
+      },
     };
   }
 

@@ -68,6 +68,7 @@ export class UsersRepository {
         JOIN users u
           ON u.id = uc.user_id
         WHERE uc.conversation_id = $1
+          AND uc.deleted_at IS NULL
           ${cursorCondition}
         ORDER BY u.version
         ${limitClause}

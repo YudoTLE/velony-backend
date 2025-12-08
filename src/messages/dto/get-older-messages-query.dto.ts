@@ -36,7 +36,7 @@ export class GetOlderMessagesQueryDto {
 
   @IsOptional()
   @IsInt({ message: () => 'Limit must be an integer' })
-  @Min(0, {
+  @Min(1, {
     message: ({ constraints }) => `Limit must be at least ${constraints[0]}`,
   })
   @Max(100, {

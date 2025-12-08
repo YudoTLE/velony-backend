@@ -1,7 +1,10 @@
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class UserDataResponseDto {
+export class UserUpdatedResponseDto {
+  @Expose({ name: 'uuid' })
+  readonly id: string;
+
   @Expose()
   readonly name: string;
 

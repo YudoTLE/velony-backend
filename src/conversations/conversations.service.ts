@@ -77,11 +77,30 @@ export class ConversationsService {
         },
       );
 
+    const categorized = conversations.reduce(
+      (acc, c) => {
+        if (c.deleted_at !== null) {
+          acc.deleted.push(c);
+        } else if (c.updated_at.getTime() !== c.created_at.getTime()) {
+          acc.updated.push(c);
+        } else {
+          acc.created.push(c);
+        }
+        return acc;
+      },
+      {
+        created: [] as typeof conversations,
+        updated: [] as typeof conversations,
+        deleted: [] as typeof conversations,
+      },
+    );
     const version = conversations.at(-1)?.version;
 
     return {
-      ...(version !== undefined && { version }),
-      conversations,
+      conversations: {
+        ...(version !== undefined && { version }),
+        ...categorized,
+      },
     };
   }
 
